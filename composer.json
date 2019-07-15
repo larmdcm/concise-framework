@@ -12,7 +12,7 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=7.0.12",
-        "monolog/monolog": "1.x-dev"
+        "monolog/monolog": "^1.12"
     },
     "autoload":{
         "psr-4": {
