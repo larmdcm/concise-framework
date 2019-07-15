@@ -1,0 +1,41 @@
+{
+	"name": "小说书城ApiDoc",
+	"navs": [
+		{
+			"name": "Home",
+			"url": "#index"
+		},
+		{
+			"name": "Edit",
+			"url": "#edit"
+		}
+	],
+	"apiUrl": {
+		"concise_chat": "http://www.concises.local/"
+	},
+	"requestUrl":"",
+	"requestUrlList": {
+		"save": "/doc/save",
+		"read": "/doc/read",
+		"get": "/doc/get",
+		"detail": "/doc/detail"
+	},
+	"jsonFormatRead": true,
+	"accessTokenName": "token",
+	"accessTokenExpiryTime": "expire_time",
+	"storage": {
+		"path": "/data/",
+		"default": "concise_chat",
+		"ext": ".json"
+	},
+	"status": {
+		"success": 200,
+		"error": 400,
+		"notice": 401,
+		"access": 403,
+		"canfind": 404,
+		"fatal": 500 
+	},
+	"postParmas":[],
+	"returnParams": []
+}

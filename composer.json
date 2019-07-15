@@ -1,0 +1,29 @@
+{
+    "name": "cmdcm/concise-framework",
+    "description": "A simple and concise framework for PHP development",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mdcm",
+            "email": "mdcm98@163.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.0.12",
+        "monolog/monolog": "1.x-dev"
+    },
+    "autoload":{
+        "psr-4": {
+            "Concise\\": "src/concise/"
+        },
+        "files": [
+            "src/concise/Foundation/helper.php"
+        ]
+    },
+    "repositories": [
+        {"type": "composer", "url": "https://packagist.phpcomposer.com"},
+        {"packagist": false}
+    ]
+}
