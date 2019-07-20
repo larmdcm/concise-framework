@@ -384,8 +384,8 @@ class Router
 			if (empty($routePath['path']) || $result['path'] !== $routePath['path']) {
 				continue;
 			}
-
-			if (count($vars) !== count($routePath['params'])) {
+			
+			if (count(array_merge($vars,$result['optVars'])) !== count($routePath['params'])) {
 				continue;
 			}
 
