@@ -1,6 +1,7 @@
 <?php
 
 namespace Concise\Routing\Route;
+
 use Concise\Foundation\Arr;
 
 class MethodGroup
@@ -12,28 +13,26 @@ class MethodGroup
 	protected $methods = [];
 
 	/**
-	 * 最新请求列表
-	 * @var object
+	 * 当前方法指向
+	 * @var integer
 	 */
-	protected $newest = [];
+	protected $currentMethodIndex = [];
 
 	public function __construct ()
 	{
 		$this->methods['ANY'] = [];
+		$this->initMethodIndex();
 	}
 	
 	public function attach (Rule $rule)
 	{
-		$this->newest = [];
-		$methods = explode('|',$rule->method);
-		foreach ($methods as $method)
-		{
-			if (!isset($this->methods[$method])) {
-				$this->methods[$method] = [];
-			}
-			$this->methods[$method][] = $rule;
-			$this->newest[] = $rule;
+		$method = strtoupper($rule->method);
+
+		if (!isset($this->methods[$method])) {
+			$this->methods[$method] = [];
 		}
+		$this->methods[$method][] = $rule;
+		$this->currentMethodIndex[$method]++;
 		return $this;
 
 	}
@@ -43,38 +42,46 @@ class MethodGroup
 		return isset($this->methods[$name]) ? array_merge($this->methods[$name],$this->methods['ANY']) : [];
 	}
 	
-	public function params ($params)
-	{
-		foreach ($this->newest as $index => $item)
-		{
-			foreach ($params as $k => $v)
-			{
-				$this->newest[$index]->$k = $v;	
-			}
-		}
-		return $this;
-	}
-
-	public function update ()
-	{
-		foreach ($this->newest as $item)
-		{
-			$index = count($this->methods[$item->method]) - 1;
-			$this->methods[$item->method][$index] = $item;
-		}
-		$this->newest = [];
-		return $this;
-	}
-
 	public function after ()
 	{
 		$this->methods = [];
 		$this->methods['ANY'] = [];
-		$this->newest  = [];
+		$this->initMethodIndex();
 	}
 
-	public function getMethods ()
+
+	public function getMehtodCurrentIndex ($method)
 	{
-		return $this->methods;
+		return $this->currentMethodIndex[$method];
+	}
+
+	public function setRuleParams ($method,$params)
+	{
+		$index = $this->getMehtodCurrentIndex($method);
+
+		foreach ($params as $k => $v)
+		{
+			$this->methods[$method][$index]->$k = $v;	
+		}
+		return $this;
+	}
+
+	public function getCurrentRule ($method)
+	{
+		$index = $this->getMehtodCurrentIndex($method);
+		return $this->methods[$method][$index];
+	}
+
+	protected function initMethodIndex ()
+	{
+		$this->currentMethodIndex = [
+			'ANY'     => -1,
+			'GET'     => -1,
+			'POST' 	  => -1,
+			'DELETE'  => -1,
+			'OPTIONS' => -1,
+			'PATCH'   => -1,
+			'PUT'     => -1
+		];
 	}
 }

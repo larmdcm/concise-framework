@@ -43,13 +43,12 @@ class RoutePath
 		$paths   	= explode('/', trim($this->path,'/'));
 		$routePaths = explode('/', trim($this->routePath,'/'));
 		$countRoutePaths = count($routePaths);
-
+		
 		if (count($paths) < $countRoutePaths) {
 			return ['path' => '','params' => []];
 		}
 
 		$routePaths = [];
-
 
 		for ($i = 0; $i < $countRoutePaths; $i++)
 		{

@@ -382,7 +382,7 @@ class Request
 		if (strpos($params,'?') !== false) {
 			$params = explode('?', $params)[0];
 		}
-		return $caseArray ? explode('/',trim($params,'/')) : trim($params,'/');
+		return $caseArray ? explode('/',trim($params,'/')) : ltrim($params,'/');
     }
     /**
      * 获取当前请求模块

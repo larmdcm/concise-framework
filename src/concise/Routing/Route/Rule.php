@@ -22,8 +22,10 @@ class Rule
 
 	protected $doc;
 
+	protected $name;
 
-	public function __construct ($method = 'GET',$rule = '',$groupNumber = -1,$handle = null,$middleware = [],$prefix = '',$namespace = '',$module = '',$doc = '')
+
+	public function __construct ($method = 'GET',$rule = '',$groupNumber = -1,$handle = null,$middleware = [],$prefix = '',$namespace = '',$module = '',$doc = '',$name = '')
 	{
 		$this->method 	   = strtoupper($method);
 		$this->rule 	   = $rule;
@@ -34,6 +36,7 @@ class Rule
 		$this->namespace   = $namespace;
 		$this->module      = $module;
 		$this->doc         = $doc;
+		$this->name        = $name;
 	}
 
 	public function __get ($key) 

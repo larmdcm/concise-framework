@@ -225,3 +225,15 @@ if ( !function_exists('errors') ) {
 		return $errorsService->set($error);
 	}
 }
+
+if ( !function_exists('route') ) {
+	/**
+	 * 获取路由地址
+	 * @param  string $name   
+	 * @param  array $params 
+	 * @return string
+	 */
+	function route ($name,$params = []) {
+		return Router::route($name,$params);
+	}
+}

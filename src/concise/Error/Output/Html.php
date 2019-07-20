@@ -20,9 +20,7 @@ class Html extends Output implements OutputInterface
 	public function out ($errno,$errmsg,$errfile,$errline,$exceptionName = '')
 	{
 		$title = $this->title;
-		ob_start();
-		debug_print_backtrace();
-		$trace = htmlspecialchars(ob_get_clean());
+		$traces = debug_backtrace();
 		ob_start();
 		include __DIR__ . '/Resources/error.php';
 		$content = ob_get_clean();
@@ -41,9 +39,7 @@ class Html extends Output implements OutputInterface
 		$errline = $e->getLine();
 		$exceptionName = get_class($e);
 		$title = $this->title;
-		ob_start();
-		debug_print_backtrace();
-		$trace = htmlspecialchars(ob_get_clean());
+		$traces = debug_backtrace();
 		ob_start();
 		include __DIR__ . '/Resources/error.php';
 		$content = ob_get_clean();
