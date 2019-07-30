@@ -18,7 +18,7 @@ if ( !function_exists('p') )
 	   	  var_dump($resource);
 	    else if (is_null($resource))
 	   	  var_dump(null);
-	    else if (request()->isCli() && App::$mod !== 'swoole') {
+	    else if (request()->isCli() || App::$mod == 'swoole') {
 	    	print_r($resource);
 	    } else{
 	   		echo "<pre style='padding:10px;border-radius:5px;background:#f5f5f5;border:1px solid #ccc;font-size:16px;'>";

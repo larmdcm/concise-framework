@@ -70,7 +70,7 @@ class Router
 		'index'   => ['get','','index'],
 		'create'  => ['get','/create','create'],
 		'store'   => ['post','','store'],
-		'show'    => ['get','/{id}','show'],
+		'show'    => ['get','/show/{id}','show'],
 		'edit'    => ['get','/edit/{id}','edit'],
 		'update'  => ['put','/{id}','update'],
 		'destroy' => ['delete','/{id}','destroy'],
@@ -384,12 +384,15 @@ class Router
 			if (empty($routePath['path']) || $result['path'] !== $routePath['path']) {
 				continue;
 			}
-			
-			if (count(array_merge($vars,$result['optVars'])) !== count($routePath['params'])) {
+
+
+			$combVars = array_merge($vars,$optVars);
+
+
+			if (!(count($vars) == count($routePath['params']) || count($combVars) == count($routePath['params']))) {
 				continue;
 			}
 
-			$combVars = array_merge($vars,$optVars);
 
 			$count = count($combVars);
 
@@ -400,8 +403,9 @@ class Router
 					$routeParams[$combVars[$i]] = $routePath['params'][$i];
 				}
 			}
+			
 			$this->request->params($routeParams);
-			$this->routeParams = $routePath['params'];
+			$this->routeParams = $routeParams;
 			$result = RouteHandle::make($rule,$this)->prev();
 			$this->methodGroup->after();
 			return $result;
