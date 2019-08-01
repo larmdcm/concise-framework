@@ -13,14 +13,16 @@ class Redis
 	protected $redis;
 
 	/**
-	 * 默认配置
+	 * 默认配置选项
 	 * @var array
 	 */
-	protected $config = [
-		'host' 	   => '127.0.0.1',
-		'port' 	   => '',
-		'password' => '',
-		'select'   => 0
+	protected $options = [
+		'host'       => '127.0.0.1',
+        'port'       => 6379,
+        'password'   => '',
+        'select'     => 0,
+        'timeout'    => 0,
+        'persistent' => fals
 	];
 
 	/**
@@ -32,18 +34,24 @@ class Redis
 		if (!extension_loaded('redis')) {
             throw new \BadFunctionCallException('not support: redis');
         }
-        $config = Config::scope('redis')->get();
-		$this->config = array_merge($this->config,is_null($config) ? [] : $config);
-		$this->redis  = new \Redis();
-		$this->redis->connect($this->config['host'],$this->config['port'],$this->config['time_out']);
+        $options = Config::scope('redis')->get('',[]);
+		$this->options = array_merge($this->options,is_null($options) ? [] : $options);
+		
+		$this->redis = new \Redis();
 
-		if (!empty($this->config['password'])) {
-			$this->redis->auth($this->config['password']);
-		}
+        if ($this->options['persistent']) {
+            $this->redis->pconnect($this->options['host'], $this->options['port'], $this->options['timeout'], 'persistent_id_' . $this->options['select']);
+        } else {
+            $this->redis->connect($this->options['host'], $this->options['port'], $this->options['timeout']);
+        }
 
-		if ($this->config['select'] != 0) {
-			$this->redis->select($this->config['select']);
-		}
+        if ('' != $this->options['password']) {
+            $this->redis->auth($this->options['password']);
+        }
+
+        if (0 != $this->options['select']) {
+            $this->redis->select($this->options['select']);
+        }
 	}
 
 	/**

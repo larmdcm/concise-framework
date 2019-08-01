@@ -258,16 +258,17 @@ class Router
 	 * build doc
 	 * @param string $module 
 	 * @param string $prefix
+	 * @param string $name
 	 * @return object
 	 */
-	public function buildDoc ($module = 'ApiDoc',$prefix = 'doc')
+	public function buildApiDocumentRoute ($module = 'ApiDoc',$prefix = 'doc',$name = 'apidocument')
 	{
 		return $this->group(['module' => $module,'prefix' => $prefix],function () {
-			 $this->get('home',"HomeController@home");
-			 $this->get('index',"HomeController@index");
-			 $this->post('show',"HomeController@show");
-			 $this->post('get',"HomeController@get");
-			 $this->post('detail',"HomeController@detail");
+			 $this->get('home',"ApiDocumentController@home")->name($name . '.home');
+			 $this->get('index',"ApiDocumentController@index")->name($name . '.index');
+			 $this->post('show',"ApiDocumentController@show")->name($name . '.show');
+			 $this->post('get',"ApiDocumentController@get")->name($name . '.get');
+			 $this->post('detail',"ApiDocumentController@detail")->name($name . '.detail');
 		});
 	}
 
@@ -374,7 +375,7 @@ class Router
 	 */
 	public function dispatch ()
 	{
-		$method       = $this->request->param('_method',$this->request->method(),'strtoupper');
+		$method       = $this->request->param('route_method',$this->request->method(),'strtoupper');
 		$rules        = $this->methodGroup->get($method);
 
 		foreach ($rules as $rule)

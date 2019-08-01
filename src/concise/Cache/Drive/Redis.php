@@ -9,7 +9,7 @@ use Concise\Foundation\Arr;
 class Redis extends CacheAbstract
 {
 	/**
-	 * 参数
+	 * 配置选项
 	 * @var array
 	 */
 	protected $options = [
@@ -18,8 +18,7 @@ class Redis extends CacheAbstract
         'password'   => '',
         'select'     => 0,
         'timeout'    => 0,
-        'persistent' => false,
-        'serialize'  => true,
+        'persistent' => false
 	];
 
 	/**
@@ -37,7 +36,7 @@ class Redis extends CacheAbstract
        		$this->options = array_merge($this->options,$options);
         }
 
-        $this->handler = new \Redis;
+        $this->handler = new \Redis();
 
         if ($this->options['persistent']) {
             $this->handler->pconnect($this->options['host'], $this->options['port'], $this->options['timeout'], 'persistent_id_' . $this->options['select']);
@@ -58,28 +57,40 @@ class Redis extends CacheAbstract
 	/**
 	 * 获取缓存key值
 	 * @param  string $name 
+	 * @param  string $default 
 	 * @return mixed 
 	 */
-	public function get ($name)
+	public function get ($name,$default = '')
 	{
+		$key   = $this->getCacheKey($name);
+		$value = $this->handler->get($key);
+
+		if (is_null($value) || $value === false) {
+		 	return $default;
+		}
+		return $this->unserialize($value);
 	}
 
 	/**
 	 * 值自增
 	 * @param  string $name 
+ 	 * @param  integer $step
 	 * @return mixed 
 	 */
-	public function incr ($name)
+	public function incr ($name,$step = 1)
 	{
+		return $this->handler->incrby($this->getCacheKey($name),$step);
 	}
 
 	/**
 	 * 值自减
 	 * @param  string $name 
+ 	 * @param  integer $step
 	 * @return mixed 
 	 */
-	public function decr ($name)
+	public function decr ($name,$step = 1)
 	{
+		return $this->handler->decrby($this->getCacheKey($name),$step);
 	}
 
 	/**
@@ -91,7 +102,15 @@ class Redis extends CacheAbstract
 	 */
 	public function set ($name,$value,$time = null) 
 	{
-		$name = $this->getCacheKey();
+		$key = $this->getCacheKey($name);
+
+		if (is_null($time)) {
+			$time = $this->options['expire_time'];
+		}
+		if (!is_scalar($value)) {
+			$value = $this->serialize($value);
+		}
+		return $time ? $this->handler->setex($key,$time,$value) : $this->handler->set($key,$value);
 	}
 
 	/**
@@ -101,6 +120,7 @@ class Redis extends CacheAbstract
 	 */
 	public function has ($name)
 	{
+		return $this->handler->exists($this->getCacheKey($name));
 	}
 
 	/**
@@ -110,6 +130,7 @@ class Redis extends CacheAbstract
 	 */
 	public function delete ($name)
 	{
+		return $this->handler->delete($this->getCacheKey($name));
 	}
 
 	/**
@@ -119,5 +140,6 @@ class Redis extends CacheAbstract
 	 */
 	public function clear($name)
 	{
+		return $this->handler->flushDB();
 	}
 }

@@ -12,7 +12,11 @@ class File extends CacheAbstract
 	 * 参数
 	 * @var array
 	 */
-	protected $options = [];
+	protected $options = [
+		'cache_subdir' => true,
+		'hash_type'    => 'md5',
+		'path'         => ''
+	];
 
 	/**
 	 * 初始化
@@ -24,27 +28,33 @@ class File extends CacheAbstract
 		if (!empty($options)) {
        		$this->options = array_merge($this->options,$options);
         }
+        if (empty($this->options['path'])) {
+        	$this->options['path'] = Env::get('runtime_path',__DIR__) . DIRECTORY_SEPARATOR . 'cache';
+	        is_dir($this->options['path']) || mkdir(Env::get('runtime_path',__DIR__) . DIRECTORY_SEPARATOR . 'cache',0755,true);
+        }
 	}
 
 	/**
 	 * 获取缓存key值
 	 * @param  string $name 
+	 * @param  string $default
 	 * @return mixed 
 	 */
-	public function get ($name)
+	public function get ($name,$default = '')
 	{
 		$name   = $this->getCacheKey($name);
 		
 		$data   = $this->getCache($name);
-		return Arr::get($data,$name);
+		return Arr::get($data,$name,$default);
 	}
 
 	/**
 	 * 值自增
 	 * @param  string $name 
+	 * @param  integer $step
 	 * @return mixed 
 	 */
-	public function incr ($name)
+	public function incr ($name,$step = 1)
 	{
 		$value = $this->get($name);
 
@@ -52,16 +62,17 @@ class File extends CacheAbstract
 			return null;
 		}
 
-		$value++;
+		$value += $step;
 		return $this->set($name,$value);
 	}
 
 	/**
 	 * 值自减
 	 * @param  string $name 
+	 * @param  integer $step 
 	 * @return mixed 
 	 */
-	public function decr ($name)
+	public function decr ($name,$step = 1)
 	{
 		$value = $this->get($name);
 
@@ -69,7 +80,7 @@ class File extends CacheAbstract
 			return null;
 		}
 
-		$value--;
+		$value -= $step;
 		return $this->set($name,$value);
 	}
 
@@ -85,14 +96,14 @@ class File extends CacheAbstract
 		$name   = $this->getCacheKey($name);
 		$path   = $this->getCacheFilePath($name);
 
-		$cache  = unserialize(file_get_contents($path));
+		$cache  = $this->unserialize(file_get_contents($path));
 
 		Arr::set($cache['data'],$name,$value);
 
 		$cache['create_time'] = time();
 		$cache['expire_time'] = is_null($time) ? $this->options['expire_time'] : $time;
 
-		return file_put_contents($path,serialize($cache)) ? true : false;
+		return file_put_contents($path,$this->serialize($cache)) ? true : false;
 	}
 
 	/**
@@ -119,11 +130,11 @@ class File extends CacheAbstract
 		$name   = $this->getCacheKey($name);
 		$path   = $this->getCacheFilePath($name);
 
-		$cache  = unserialize(file_get_contents($path));
+		$cache  = $this->unserialize(file_get_contents($path));
 
 		Arr::delete($cache['data'],$name);
 
-		return file_put_contents($path,serialize($cache)) ? true : false;
+		return file_put_contents($path,$this->serialize($cache)) ? true : false;
 	}
 
 	/**
@@ -141,43 +152,56 @@ class File extends CacheAbstract
 	/**
 	 * 获取缓存文件路径
 	 * @param  string $name 
+	 * @param  bollean $getCache 
 	 * @return string
 	 */
-	protected function getCacheFilePath ($name)
+	protected function getCacheFilePath ($name,$getCache = false)
 	{
-		$path = Env::get('runtime_path',__DIR__) . '/cache/' . md5(explode('.',$name)[0]) . '.php';
-		is_dir(dirname($path)) || mkdir(dirname($path),0755);
+		$name = hash($this->options['hash_type'],explode('.',$name)[0]);
+		
+		if ($this->options['cache_subdir']) {
+			$name = substr($name, 0, 2) . DIRECTORY_SEPARATOR . substr($name, 2);
+		}
+		$path = $this->options['path'] . DIRECTORY_SEPARATOR . $name . '.php';
+		$subDir = dirname($path);
+		is_dir($subDir) || mkdir($subDir,0755,true);
+
 		if (file_exists($path)) {
-			$cache = unserialize(file_get_contents($path));
-			if ($cache['expire_time'] != 0) {
-				$expireTime = $cache['create_time'] + $cache['expire_time'];
-				if (time() < $expireTime) {
-					return $path;
-				}
-			} else {
-				return $path;
-			}
+			return $path;
+		}
+		if ($getCache) {
+			is_dir($subDir) && rmdir($subDir);
+			return !$getCache;
 		}
 		$data['data']        = [];
 		$data['expire_time'] = $this->options['expire_time'];
 		$data['create_time'] = time();
-		file_put_contents($path, serialize($data));
+		file_put_contents($path, $this->serialize($data));
 		return $path;
 	}
 
 	/**
 	 * 获取cache
 	 * @param  string $name 
-	 * @return array    
+	 * @return mixed    
 	 */
 	protected function getCache ($name)
 	{
-		$path  = $this->getCacheFilePath($name);
-		$cache = unserialize(file_get_contents($path));
+		$path  = $this->getCacheFilePath($name,true);
+		if ($path === false) {
+			return [];
+		}
+		$cache = $this->unserialize(file_get_contents($path));
 		if ($cache['expire_time'] != 0) {
 			$expireTime = $cache['create_time'] + $cache['expire_time'];
 			if (time() > $expireTime) {
-				return null;
+				$subDir = dirname($path);
+				$paths = explode(DIRECTORY_SEPARATOR,$subDir);
+				unlink($path);
+				if ($this->options['cache_subdir'] && is_dir($subDir) &&  $paths[count($paths) - 1] !== 'cache') {
+					rmdir($subDir);
+				}
+				return [];
 			}
 		}
 

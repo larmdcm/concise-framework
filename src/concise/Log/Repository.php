@@ -56,7 +56,7 @@ class Repository
 		 	 },
 		 	 'ext' 		   => 'log'
 		];
-		$this->config  = array_merge($this->config,Config::get('log',[]));
+		$this->config  = array_merge($this->config,Config::scope('log')->get('',[]));
 
 		$this->stream  = new StreamHandler($this->getLogPath(Env::get('runtime_path',__DIR__) . '/logs'), Logger::DEBUG);
 

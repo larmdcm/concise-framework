@@ -126,6 +126,10 @@ class ErrorHandle implements ErrorHandleInterface
 			$output = Config::get('error_handle.output');
 		}
 
+		if ($output == 'html') {
+			$output = request()->isAjax() ? 'json' : $output;
+		}
+
 		$outputClass = "\\Concise\\Error\\Output\\" . ucfirst($output);
 
 		if (!class_exists($outputClass)) {

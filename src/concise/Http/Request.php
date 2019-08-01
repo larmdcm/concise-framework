@@ -515,4 +515,84 @@ class Request
     {
         return strpos(PHP_SAPI, 'cgi') === 0;
     }
+
+    /**
+     * 获取客户端IP地址
+     * @param  integer   $type 返回类型 0 返回IP地址 1 返回IPV4地址数字
+     * @param  boolean   $adv 是否进行高级模式获取（有可能被伪装）
+     * @return mixed
+     */
+    public function ip($type = 0, $adv = true)
+    {
+        $type      = $type ? 1 : 0;
+        static $ip = null;
+
+        if (null !== $ip) {
+            return $ip[$type];
+        }
+
+        $httpAgentIp = $this->config->get('http_agent_ip');
+
+        if ($httpAgentIp && isset($_SERVER[$httpAgentIp])) {
+            $ip = $_SERVER[$httpAgentIp];
+        } elseif ($adv) {
+            if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                $arr = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                $pos = array_search('unknown', $arr);
+                if (false !== $pos) {
+                    unset($arr[$pos]);
+                }
+                $ip = trim(current($arr));
+            } elseif (isset($_SERVER['HTTP_CLIENT_IP'])) {
+                $ip = $_SERVER['HTTP_CLIENT_IP'];
+            } elseif (isset($_SERVER['REMOTE_ADDR'])) {
+                $ip = $_SERVER['REMOTE_ADDR'];
+            }
+        } elseif (isset($_SERVER['REMOTE_ADDR'])) {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+
+        // IP地址类型
+        $ip_mode = (strpos($ip, ':') === false) ? 'ipv4' : 'ipv6';
+
+        // IP地址合法验证
+        if (filter_var($ip, FILTER_VALIDATE_IP) !== $ip) {
+            $ip = ($ip_mode === 'ipv4') ? '0.0.0.0' : '::';
+        }
+
+        // 如果是ipv4地址，则直接使用ip2long返回int类型ip；如果是ipv6地址，暂时不支持，直接返回0
+        $long_ip = ($ip_mode === 'ipv4') ? sprintf("%u", ip2long($ip)) : 0;
+
+        $ip = [$ip, $long_ip];
+
+        return $ip[$type];
+    }
+
+    /**
+     * 检测是否使用手机访问
+     * @return bool
+     */
+    public function isMobile()
+    {
+        if (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
+            return true;
+        } elseif (isset($_SERVER['HTTP_ACCEPT']) && strpos(strtoupper($_SERVER['HTTP_ACCEPT']), "VND.WAP.WML")) {
+            return true;
+        } elseif (isset($_SERVER['HTTP_X_WAP_PROFILE']) || isset($_SERVER['HTTP_PROFILE'])) {
+            return true;
+        } elseif (isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/(blackberry|configuration\/cldc|hp |hp-|htc |htc_|htc-|iemobile|kindle|midp|mmp|motorola|mobile|nokia|opera mini|opera |Googlebot-Mobile|YahooSeeker\/M1A1-R2D2|android|iphone|ipod|mobi|palm|palmos|pocket|portalmmm|ppc;|smartphone|sonyericsson|sqh|spv|symbian|treo|up.browser|up.link|vodafone|windows ce|xda |xda_)/i', $_SERVER['HTTP_USER_AGENT'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+   /**
+     * 是否在微信内置浏览器
+     * @return boolean 
+     */
+    public function isWeChatBrowser ()
+    {
+        return strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false ? true : false;
+    }
 }

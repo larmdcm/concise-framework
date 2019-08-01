@@ -42,7 +42,9 @@ class RateLimit
 			// 错误消息
 			'error_msg'   => "your have too many request",
 			// 错误码
-			'error_code'  => 401
+			'error_code'  => 401,
+			// 连接选项
+			'connect_options' => []
 		];
 
 
@@ -55,7 +57,7 @@ class RateLimit
 		if (!class_exists($className)) {
 			throw new \RuntimeException("Api Redis Drive not exists!");
 		}
-		$this->handler = new $className();
+		$this->handler = new $className(isset($this->config['connect_options']) ? $this->config['connect_options'] : []);
 	}
 
 	/**

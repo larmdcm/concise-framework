@@ -80,9 +80,11 @@ class Auth
 			'token_valid_error_msg'        => 'token valid error.',
 			// token验证错误码
 			'token_valid_error_code'       => '403',
+
+			'connect_options' => []
 		];
 
-		$config = Config::scope('api')->get('base',[]);
+		$config = Config::scope('api')->get('auth',[]);
 		$this->config = array_merge($this->config,is_null($config) ? [] : $config);
 
 		$drive = ucfirst(empty($this->config['drive']) ? 'redis' : $this->config['drive']);
@@ -90,7 +92,7 @@ class Auth
 		if (!class_exists($className)) {
 			throw new \RuntimeException("Api Redis Drive not exists!");
 		}
-		$this->handler = new $className();
+		$this->handler = new $className(isset($this->config['connect_options']) ? $this->config['connect_options'] : []);
 	}
 
 	/**

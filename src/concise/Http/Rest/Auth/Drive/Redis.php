@@ -2,8 +2,6 @@
 
 namespace Concise\Http\Rest\Auth\Drive;
 
-use Concise\Nosql\Redis\Redis as ConciseRedis;
-
 class Redis
 {
 	/**
@@ -19,12 +17,47 @@ class Redis
 	protected $redis;
 
 	/**
+	 * 配置选项
+	 * @var array
+	 */
+	protected $options = [
+		'host'       => '127.0.0.1',
+        'port'       => 6379,
+        'password'   => '',
+        'select'     => 0,
+        'timeout'    => 0,
+        'persistent' => false
+	];
+
+	/**
 	 * 初始化
 	 * @return void
 	 */
-	public function __construct ()
+	public function __construct ($options = [])
 	{
-		$this->redis = new ConciseRedis();
+		if (!extension_loaded('redis')) {
+            throw new \BadFunctionCallException('not support: redis');
+        }
+		
+		if (!empty($options)) {
+       		$this->options = array_merge($this->options,$options);
+		}
+
+        $this->redis = new \Redis();
+
+        if ($this->options['persistent']) {
+            $this->redis->pconnect($this->options['host'], $this->options['port'], $this->options['timeout'], 'persistent_id_' . $this->options['select']);
+        } else {
+            $this->redis->connect($this->options['host'], $this->options['port'], $this->options['timeout']);
+        }
+
+        if ('' != $this->options['password']) {
+            $this->redis->auth($this->options['password']);
+        }
+
+        if (0 != $this->options['select']) {
+            $this->redis->select($this->options['select']);
+        }
 	}
 
 	/**

@@ -5,24 +5,36 @@ namespace Concise\Session;
 use Concise\Foundation\Config;
 use Concise\Foundation\Arr;
 use Concise\Container\Container;
+USE Concise\Exception\ClassNotFoundException;
 
 class Session
 {
-	protected $init = false;
+	/**
+	 * 是否初始化
+	 * @var null
+	 */
+	protected $init = null;
 
-	public function __construct ($config = [])
+	/**
+	 * 构造函数
+	 * @return void
+	 */
+	public function __construct ()
 	{
-		if (!$this->init) {
+		if (is_null($this->init)) {
 			$this->init();
 		}
 	}
 
+	/**
+	 * 初始化
+	 * @param  array $config 配置项
+	 * @return boolean
+	 */
 	public function init ($config = [])
 	{
 		// 读取配置
-		if (empty($config)) {
-		 	$config = Config::scope('session')->get('',[]);
-		}
+	 	$config = array_merge(Config::scope('session')->get('',[]),$config);
 
 		$isDoStart = false;
 		     // 启动session
@@ -74,8 +86,13 @@ class Session
             session_cache_expire($config['cache_expire']);
         }
 
-        if (isset($config['type']) && !empty($config['type'])) {
-        	
+        if (isset($config['drive']) && !empty($config['drive'])) {
+	    	  // 读取session驱动
+            $class = false !== strpos($config['drive'], '\\') ? $config['drive'] : '\\Concise\\Session\\Drive\\' . ucwords($config['drive']);
+            // 检查驱动类
+            if (!class_exists($class) || !session_set_save_handler(new $class($config))) {
+                throw new ClassNotFoundException('error session handler:' . $class, $class);
+            }
         }
 
         if ($isDoStart) {
@@ -88,39 +105,132 @@ class Session
         return $this->init;
 	}
 
+    /**
+     * session自动启动或者初始化
+     * @return void
+     */
+    public function boot()
+    {
+        if (is_null($this->init)) {
+            $this->init();
+        } elseif (false === $this->init) {
+            if (PHP_SESSION_ACTIVE != session_status()) {
+                session_start();
+            }
+            $this->init = true;
+        }
+    }
 	/**
 	 * 获取
 	 * @param  string $name    
 	 * @param  string $default 
-	 * @return string         
+	 * @return boolean         
 	 */
 	public function get ($name = '',$default = '')
 	{
+        empty($this->init) && $this->boot();
 		return Arr::get($_SESSION,$name,$default);
 	}
 	/**
 	 * 设置
 	 * @param string $name  
 	 * @param mixed $value
-	 * @return object 
+	 * @return boolean 
 	 */
 	public function set ($name,$value = '')
 	{
-		Arr::set($_SESSION,$name,$value);
-		return $this;
+		empty($this->init) && $this->boot();
+		return Arr::set($_SESSION,$name,$value);
 	}
+
 	/**
 	 * 删除
 	 * @param  string $name 
-	 * @return object       
+	 * @return bool       
 	 */
 	public function delete ($name)
 	{
-		is_null($name) ? session_destroy() && $_SESSION = [] : Arr::delete($_SESSION,$name);
-		return $this;
+		empty($this->init) && $this->boot();
+		return Arr::delete($_SESSION,$name);
 	}
 
-	public function isInit ()
+	/**
+	 * 获取session是否存在
+	 * @param  string  $name 
+	 * @return boolean 
+	 */
+	public function has ($name)
+	{
+		empty($this->init) && $this->boot();
+		return Arr::has($_SESSION,$name);
+	}
+
+	/**
+	 * 清除session
+	 * @return void
+	 */
+	public function clear ($scope = '')
+	{
+		empty($this->init) && $this->boot();
+		if (empty($scope)) {
+			$_SESSION = [];
+		} else {
+			$_SESSION[$scope] = [];
+		}
+	}
+
+	/**
+	 * 销毁session
+	 * @return void
+	 */
+	public function destroy ()
+	{
+		if (!empty($_SESSION)) {
+			$_SESSION = [];
+		}
+		session_unset();
+		session_destroy();
+		$this->init = null;
+	}
+
+	/**
+	 * 启动session
+	 * @return void
+	 */
+	public function start ()
+	{
+		if (!$this->init) {
+			session_start();
+			$this->init = true;
+		}
+	}
+
+   /**
+     * 重新生成session_id
+     * @param  bool $delete 是否删除关联会话文件
+     * @return void
+     */
+    public function regenerate($delete = false)
+    {
+        session_regenerate_id($delete);
+    }
+
+    /**
+     * 暂停session
+     * @return void
+     */
+    public function pause()
+    {
+        // 暂停session
+        session_write_close();
+        $this->init = false;
+    }
+
+	/**
+	 * 是否初始化
+	 * @return boolean
+	 */
+	public function isInt ()
 	{
 		return $this->init;
 	}

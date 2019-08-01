@@ -5,20 +5,21 @@ namespace Concise\Foundation;
 use Concise\Container\Container;
 use Concise\Http\Response;
 use Concise\Error\Error;
-use Concise\Http\Request;
 use Router;
 use Concise\Exception\HttpException;
 use Concise\Exception\HttpResponseException;
 use Concise\Exception\ValidatorErrorException;
 use Concise\View\View;
 use Concise\Ioc\ServiceContainer;
+use Concise\Foundation\Config;
+use Concise\Env;
 
 class App
 {	
 	/**
 	 * 版本号
 	 */
-	const VERSION = '1.0.0';
+	const VERSION = 'dev-master';
 
 	/**
 	 * 容器对象
@@ -43,14 +44,58 @@ class App
 	 * @var string
 	 */
 	public static $mod;
+	
+	/**
+	 * 运行目录路径
+	 * @var string
+	 */
+	public $runPath;
+	
+	/**
+	 * 根目录路径
+	 * @var string
+	 */
+	public $rootPath;
 
+	/**
+	 * 环境变量对象
+	 * @var object
+	 */
+	public $env;
 
 	/**
 	 * 初始化
 	 * @return void
 	 */
-	public function __construct (Request $request)
+	public function initialize ($runPath = '')
 	{
+
+		$this->runPath  = realpath($runPath);
+		
+		$this->rootPath = dirname($this->runPath);
+
+		$envs = [
+			'root_path'    => $this->rootPath,
+			'app_path'     => $this->rootPath . '/app',
+			'config_path'  => $this->rootPath . '/config',
+			'route_path'   => $this->rootPath . '/route',
+			'runtime_path' => $this->rootPath . '/runtime',
+			'view_path'    => $this->rootPath . '/views'
+		];
+
+		$this->env = Container::get('env');
+
+		array_walk($envs,function ($value,$key) {
+			if (is_null($this->env->get($key))) {
+				$this->env->set($key,$value);
+			}
+		});
+
+		$envFile = $this->rootPath . DIRECTORY_SEPARATOR . '.env';
+		if (is_file($envFile)) {
+			$this->env->load($envFile);
+		}
+
 		static::$container = Container::getInstance();
 
 		static::$serviceContainer = ServiceContainer::getInstance($this->getServiceContainerConfig());
@@ -58,8 +103,12 @@ class App
 		static::$debug = static::$container->make('config')->get('app_debug',false);
 
 		if (is_null(static::$mod)) {
-			static::$mod   = $request->isCli() ? 'cli' : 'web';
+			static::$mod   = request()->isCli() ? 'cli' : 'web';
 		}
+		// 配置config路径
+		Config::setConfigPath(Env::get('config_path'));
+		// 初始化日期组件
+		Container::get('date',['dateTimeZone' => Config::get('date_time_zone')]);
 	}
 
 	/**
@@ -83,6 +132,7 @@ class App
 	 */
 	public function run ()
 	{
+		$this->initialize();
 		$this->buildRoute();
 		
 		try {
@@ -96,7 +146,7 @@ class App
 				$result = $result->fetch();
 			}
 		} catch (HttpException $e) {
-			Error::responseHttpError($e);
+			throw $e;
 		} catch (HttpResponseException $e) {
 			return $e->getResponse();
 		} catch (ValidatorErrorException $e) {

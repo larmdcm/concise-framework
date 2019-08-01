@@ -24,8 +24,8 @@ class Cache
 	 * @var array
 	 */
 	protected $options = [
-		'dirve'        => 'File',
-		'prefix'       => 'concise_',
+		'drive'        => 'File',
+		'prefix'       => '',
 		'expire_time'  => 0,
 	];
 
@@ -36,9 +36,7 @@ class Cache
 	public function __construct ()
 	{
 		$this->options = array_merge($this->options,Config::scope('cache')->get() ? Config::scope('cache')->get() : []);
-
 		$class = "\Concise\Cache\Drive\\" . ucfirst(empty($this->options['drive']) ? 'File' : $this->options['drive']);
-
 		$this->handler = new $class($this->options);
 	}
 

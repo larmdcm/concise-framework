@@ -26,7 +26,8 @@ class Console
 	protected static $defaultCommand = [
 		'swoole'  => 'Concise\Console\Command\SwooleServer',
 		'api_doc' => 'Concise\Console\Command\ApiDocBuild',
-		'make'    => 'Concise\Console\Command\Make'
+		'make'    => 'Concise\Console\Command\Make',
+		'config'  => 'Concise\Console\Command\MakeConfig'
 	];
 
 	// 构造方法初始化

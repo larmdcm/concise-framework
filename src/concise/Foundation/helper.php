@@ -5,6 +5,7 @@ use Concise\Http\Response;
 use Concise\Foundation\App;
 use Concise\View\View;
 use Concise\Foundation\Config;
+use Concise\Foundation\Facade\Cookie;
 
 if ( !function_exists('p') ) 
 {
@@ -234,6 +235,49 @@ if ( !function_exists('route') ) {
 	 * @return string
 	 */
 	function route ($name,$params = []) {
-		return Router::route($name,$params);
+		return container('router')->route($name,$params);
 	}
+}
+
+if ( !function_exists('env') ) {
+	
+	/**
+     * 获取环境变量值
+     * @access public
+     * @param  string    $name 
+     * @param  mixed     $default  
+     * @return mixed
+     */
+	function env ($name = null, $default = null) {
+		return container('env')->get($name,$default);
+	}
+}
+
+if ( !function_exists('cookie') ) {
+    /**
+     * Cookie管理
+     * @param string|array  $name cookie名称，如果为数组表示进行cookie设置
+     * @param mixed         $value cookie值
+     * @param mixed         $option 参数
+     * @return mixed
+     */
+    function cookie($name, $value = '', $option = null)
+    {
+        if (is_array($name)) {
+            // 初始化
+            Cookie::init($name);
+        } elseif (is_null($name)) {
+            // 清除
+            Cookie::clear($value);
+        } elseif ('' === $value) {
+            // 获取
+            return 0 === strpos($name, '?') ? Cookie::has(substr($name, 1), $option) : Cookie::get($name);
+        } elseif (is_null($value)) {
+            // 删除
+            return Cookie::delete($name);
+        } else {
+            // 设置
+            return Cookie::set($name, $value, $option);
+        }
+    }
 }

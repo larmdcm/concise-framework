@@ -38,7 +38,7 @@ class Config
 	 */
 	public function __construct (string $configPath = '')
 	{
-		$this->configPath = $configPath;
+		$this->configPath = dirname(realpath($configPath)) . DIRECTORY_SEPARATOR . 'config';
 	}
 
 	/**
@@ -92,10 +92,8 @@ class Config
 		}
 		$basePath = $this->configPath;
 		$ext      = $this->parseMethod == 'default' ? 'php' : $this->parseMethod;
-
 		$instance = new $className($basePath . '/' . $scope . '.' . $ext);
-		if ($this->parseCache)
-		{
+		if ($this->parseCache) {
 			$this->parses[$saveScopeKey] = $instance;
 		}
 		$this->parseMethod = "default";

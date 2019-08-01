@@ -28,7 +28,7 @@ class Output implements OutputInterface
 	 * @return mixed          
 	 */
 	public function output ($data,$type = '',$code = 500,$header = [])
-	{
+	{	
 		if (!Config::get('app_debug',false)) {
 			return $this->responseErrorExit($code,$header);
 		}
