@@ -119,18 +119,12 @@ if (!function_exists('env'))
 	 * @param  string $value 
 	 * @return mixed
 	 */
-	function env ($key = '',$value = '') {
+	function env ($key = '',$default = '') {
 		$env = container('env');
-		if (empty($key) && empty($value)) {
+		if (empty($key) && empty($default)) {
 			return $env;
 		}
-		if (!empty($key) && empty($value)) {
-			return $env->get($key);
-		}
-		if (!empty($key) && !empty($value)) {
-			return $env->set($key,$value);
-		}
-		return false;
+		return $env->get($key,$default);
 	}
 }
 
@@ -236,20 +230,6 @@ if ( !function_exists('route') ) {
 	 */
 	function route ($name,$params = []) {
 		return container('router')->route($name,$params);
-	}
-}
-
-if ( !function_exists('env') ) {
-	
-	/**
-     * 获取环境变量值
-     * @access public
-     * @param  string    $name 
-     * @param  mixed     $default  
-     * @return mixed
-     */
-	function env ($name = null, $default = null) {
-		return container('env')->get($name,$default);
 	}
 }
 

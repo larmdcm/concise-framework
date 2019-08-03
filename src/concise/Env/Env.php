@@ -38,7 +38,7 @@ class Env
         if (is_null($name)) {
             return $this->data;
         }
-
+        
         $name = strtoupper(str_replace('.', '_', $name));
 
         if (isset($this->data[$name])) {
@@ -80,7 +80,6 @@ class Env
     {
         if (is_array($env)) {
             $env = array_change_key_case($env, CASE_UPPER);
-
             foreach ($env as $key => $val) {
                 if (is_array($val)) {
                     foreach ($val as $k => $v) {

@@ -71,7 +71,6 @@ class App
 	{
 
 		$this->runPath  = realpath($runPath);
-		
 		$this->rootPath = dirname($this->runPath);
 
 		$envs = [
@@ -82,7 +81,6 @@ class App
 			'runtime_path' => $this->rootPath . '/runtime',
 			'view_path'    => $this->rootPath . '/views'
 		];
-
 		$this->env = Container::get('env');
 
 		array_walk($envs,function ($value,$key) {
@@ -109,6 +107,8 @@ class App
 		Config::setConfigPath(Env::get('config_path'));
 		// 初始化日期组件
 		Container::get('date',['dateTimeZone' => Config::get('date_time_zone')]);
+
+		return $this;
 	}
 
 	/**
