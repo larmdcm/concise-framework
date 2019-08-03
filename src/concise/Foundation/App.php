@@ -74,7 +74,7 @@ class App
 		$this->rootPath = dirname($this->runPath);
 
 		$envs = [
-			'root_path'    => $this->rootPath,
+			'base_path'    => $this->rootPath,
 			'app_path'     => $this->rootPath . '/app',
 			'config_path'  => $this->rootPath . '/config',
 			'route_path'   => $this->rootPath . '/route',
@@ -113,10 +113,14 @@ class App
 
 	/**
 	 * 绑定路由
-	 * @return void
+	 * @param  $name string 名称
+	 * @return mixed
 	 */
-	public function buildRoute ()
+	public function buildRoute ($name = 'mapRoute')
 	{
+		if ($this->getServiceContainer()->exists($name)) {
+			return $this->getServiceContainer($name)->map();
+		}
 		$routeFile = static::$container->get('env')->get('route_path') . '/route.php';
 
 		if (!is_file($routeFile)) {
@@ -172,8 +176,11 @@ class App
 	 * @param  string $service 
 	 * @return object          
 	 */
-	public function getServiceContainer ($service)
+	public function getServiceContainer ($service = null)
 	{
+		if (is_null($service)) {
+			return static::$serviceContainer;
+		}
 		return static::$serviceContainer->get($service);
 	}
 

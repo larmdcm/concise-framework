@@ -261,3 +261,25 @@ if ( !function_exists('cookie') ) {
         }
     }
 }
+
+if ( !function_exists('base_url') ) {
+	/**
+	 * 获取根目录
+	 * @param  string $path 
+	 * @return string
+	 */
+	function base_url ($path = '') {
+		return env('base_path') . '/' . $path;
+	}
+}
+
+if ( !function_exists('public_path') ) {
+	/**
+	 * 获取public目录
+	 * @param  string $path 
+	 * @return string
+	 */
+	function public_path ($path = '') {
+		return base_url('public/' . $path);
+	}
+}

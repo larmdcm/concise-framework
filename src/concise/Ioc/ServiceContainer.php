@@ -54,12 +54,12 @@ class ServiceContainer
 	private function build ($serviceName)
 	{
 		if (!isset($this->providers[$serviceName])) {
-			throw new ServiceContainer("服务提供者:[ " . $serviceName . " ]未注册到服务容器中");
+			throw new ServiceProviderException("服务提供者:[ " . $serviceName . " ]未注册到服务容器中");
 		}
 		$service = $this->providers[$serviceName];
 
 		if (!isset($service['class'])) {
-			throw new ServiceContainer("服务提供者:[ " . $serviceName . " ] class 未配置");
+			throw new ServiceProviderException("服务提供者:[ " . $serviceName . " ] class 未配置");
 		}
 		$params = isset($service['arguments']) ? $service['arguments'] : [];
 		$serviceProvider = ServiceProviderBuilder::buildServiceProvider($this,$serviceName,$service['class'],$params);
@@ -82,5 +82,15 @@ class ServiceContainer
 		$params = empty($arguments) ? $this->providers[$serviceName]['arguments'] : $arguments;
 		$this->providers[$serviceName] = ['class' => $service,'arguments' => $params,'singleton' => $singleton];
 		return $this;
+	}
+
+	/**
+	 * 获取服务提供者是否正常到容器
+	 * @param  string $serviceName 
+	 * @return bool              
+	 */
+	public function exists ($serviceName)
+	{
+		return isset($this->providers[$serviceName]);
 	}
 }

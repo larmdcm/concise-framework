@@ -2,7 +2,7 @@
 
 namespace Concise\Ioc\Provider;
 
-class ErrorProvider
+class ErrorServiceProvider
 {
 	/**
 	 * 获取全局错误信息

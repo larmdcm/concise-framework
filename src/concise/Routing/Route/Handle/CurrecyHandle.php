@@ -7,13 +7,12 @@ use Concise\Http\Request;
 use Concise\Ioc\Ioc;
 use Concise\Exception\HttpException;
 use Concise\Exception\ClassNotException;
+use Concise\Foundation\Config;
 
 class CurrecyHandle extends Handle
 {
 	public function exec (Request $request)
 	{
-		
-
 		list($handle,$className,$module) = static::buildClass($this->handler,$this->rule,$this->groupParams);
 
 		$request->module($module);
@@ -60,13 +59,16 @@ class CurrecyHandle extends Handle
 		if ($groupParams['namespace'] !== '') {
 			$namespace = $groupParams['namespace'];
 		}
-
 		if ($rule->namespace !== '') {
-			$namespace = $this->rule->namespace;
+			$namespace = $rule->namespace;
 		}
-		$className = sprintf("\\%s\\Controller%s\\%s",$namespace,$module,$handle[0]);
+
+		if (empty($namespace)) {
+			$namespace = Config::get('app_namespace','App') . "\\Controller";
+		}
+		$className = sprintf("%s%s\\%s",$namespace,$module,$handle[0]);
 		if (!class_exists($className)) {
-			throw new ClassNotException("{$handle[0]} Class Not Exists",$className);
+			throw new ClassNotException("{$className} Class Not Exists",$className);
 		}
 
 		return [$handle,$className,$module];

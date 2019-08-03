@@ -63,6 +63,12 @@ class Router
 	protected $currentAttachMethod;
 
 	/**
+	 * 分组参数
+	 * @var array
+	 */
+	protected $groupParams = [];
+
+	/**
 	 * 资源路由
 	 * @var array
 	 */
@@ -100,9 +106,25 @@ class Router
 	 * @param  Closure $callback 
 	 * @return object   
 	 */
-	public function group ($params,$callback)
+	public function group ($params,$callback = null)
 	{
-		$this->group->create($params)->after($callback);
+		if (is_null($callback)) {
+			$groupParams = $this->groupParams;
+			$this->groupParams = [];
+			$this->group->create($groupParams)->after(function () use ($params) {
+				if (is_callable($params)) {
+					$params($this,$this->group);
+				} else if (is_string($params) && is_file($params)) {
+					include $params;
+				}
+				$this->currentAttachMethod = null;
+			});
+		} else {
+			$this->group->create($params)->after(function () use ($callback) {
+				is_callable($callback) && $callback($this,$this->group);
+				$this->currentAttachMethod = null;
+			});
+		}
 		return $this;
 	}
 
@@ -206,7 +228,8 @@ class Router
 	public function middleware ($middleware)
 	{
 		$middlewares = is_array($middleware) ? $middleware : [$middleware];
-		$this->methodGroup->setRuleParams($this->currentAttachMethod,['middleware' => $middlewares]);
+		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['middleware' => $middlewares]);
+		$this->groupParams['middleware'] = $middlewares;
 		return $this;
 	}
 
@@ -217,7 +240,8 @@ class Router
 	 */
 	public function prefix ($prefix)
 	{
-		$this->methodGroup->setRuleParams($this->currentAttachMethod,['prefix' => $prefix]);
+		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['prefix' => $prefix]);
+		$this->groupParams['prefix'] = $prefix;
 		return $this;
 	}
 
@@ -228,7 +252,8 @@ class Router
 	 */
 	public function namespace ($namespace)
 	{
-		$this->methodGroup->setRuleParams($this->currentAttachMethod,['namespace' => $namespace]);
+		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['namespace' => $namespace]);
+		$this->groupParams['namespace'] = $namespace;
 		return $this;
 	}
 
@@ -239,7 +264,8 @@ class Router
 	 */
 	public function module ($module)
 	{
-		$this->methodGroup->setRuleParams($this->currentAttachMethod,['module' => $module]);
+		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['module' => $module]);
+		$this->groupParams['module'] = $module;
 		return $this;
 	}
 
@@ -250,7 +276,8 @@ class Router
 	 */
 	public function doc ($options = [])
 	{
-		$this->methodGroup->setRuleParams($this->currentAttachMethod,['doc' => $options]);
+		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['doc' => $options]);
+		$this->groupParams['doc'] = $options;
 		return $this;
 	}
 
@@ -279,7 +306,7 @@ class Router
 	 */
 	public function name ($name)
 	{
-		$this->methodGroup->setRuleParams($this->currentAttachMethod,['name' => $name]);
+		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['name' => $name]);
 		$this->routeName->set($name,$this->methodGroup->getCurrentRule($this->currentAttachMethod));
 		return $this;
 	}

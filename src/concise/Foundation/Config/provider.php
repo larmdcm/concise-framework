@@ -2,7 +2,7 @@
 
 return [
 	'errors' => [
-		'class'     => 'Concise\Ioc\Provider\ErrorProvider',
+		'class'     => 'Concise\Ioc\Provider\ErrorServiceProvider',
 		'arguments' => [],
 		'singleton' => true
 	]
