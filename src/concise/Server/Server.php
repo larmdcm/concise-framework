@@ -7,7 +7,6 @@ use Concise\Foundation\Config;
 use Concise\Foundation\Facade\Env;
 use Swoole\Process;
 
-
 abstract class Server
 {
 	/**

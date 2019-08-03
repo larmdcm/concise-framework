@@ -230,7 +230,7 @@ class Session
 	 * 是否初始化
 	 * @return boolean
 	 */
-	public function isInt ()
+	public function isInit ()
 	{
 		return $this->init;
 	}
