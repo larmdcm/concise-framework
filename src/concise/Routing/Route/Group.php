@@ -17,39 +17,35 @@ class Group
 
 	protected $params = [];
 
-	protected $isOpen = false;
-
-	public function __construct ()
-	{
-	}
+	protected $groupNumbers = [];
 
 	public function create ($params)
 	{
-		if (!$this->isOpen) {
-			$this->groupNumber++;
-		}
-			
+		$this->groupNumber++;
 		$groupNumber = $this->groupNumber;
+		
+		$this->groupNumbers[] = $groupNumber;
+		$params = array_merge($this->defaultParams,$params);
+		$this->params[$groupNumber] = $params;
 
-		$this->isOpen = true;
-
-		if (!isset($this->params[$groupNumber])) {
-			$this->params[$groupNumber] = [];
-		}
-
-		array_push($this->params[$groupNumber],array_merge($this->defaultParams,$params));
 		return $this;
 	}
 	
 	public function after ($callback)
 	{
 		is_callable($callback) && $callback();
-		$this->isOpen = false;
+		unset($this->groupNumbers[$this->groupNumber]);
 	}
 
 	public function getParams ($groupNumber)
 	{
-		$groupParams = isset($this->params[$groupNumber]) ? $this->params[$groupNumber] : [];
+		if (!is_array($groupNumber)) {
+			$groupNumber = [$groupNumber];
+		}
+		$groupParams = array_filter($this->params,function ($item,$key) use ($groupNumber) {
+			return in_array($key, $groupNumber);
+		},ARRAY_FILTER_USE_BOTH);
+
 		if (!empty($groupParams)) {
 			$params = $groupParams[0];
 			if (count($groupParams) > 1) {
@@ -65,7 +61,7 @@ class Group
 
 	public function getGroupNumber ()
 	{
-		return $this->isOpen ? $this->groupNumber : -1;
+		return $this->groupNumbers;
 	}
 
 	public function getDefaultParams ()

@@ -68,6 +68,12 @@ class Request
      */
     protected $header;
 
+    /**
+     * 请求路径
+     * @var string
+     */
+    protected $path;
+
 	/**
 	 * 获取post请求数据
 	 * @param  string $key     
@@ -594,5 +600,18 @@ class Request
     public function isWeChatBrowser ()
     {
         return strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false ? true : false;
+    }
+
+    /**
+     * 获取路由路径
+     * @param  string $path 
+     * @return string     
+     */
+    public function path ($path = '')
+    {
+        if (!empty($path)) {
+            $this->path = $path;
+        }
+        return $this->path;
     }
 }

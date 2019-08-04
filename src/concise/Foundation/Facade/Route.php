@@ -4,7 +4,7 @@ namespace Concise\Foundation\Facade;
 
 use Concise\Facade\Facade;
 
-class Router extends Facade
+class Route extends Facade
 {
 	public static function getFacadeAccessor ()
 	{

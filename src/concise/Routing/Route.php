@@ -12,7 +12,7 @@ use Concise\Routing\Route\RoutePath;
 use Concise\Routing\Route\RouteName;
 use Concise\Exception\RouteNotFoundException;
 
-class Router
+class Route
 {
 	/**
 	 * 请求对象
@@ -402,7 +402,7 @@ class Router
 	 */
 	public function dispatch ()
 	{
-		$method       = $this->request->param('route_method',$this->request->method(),'strtoupper');
+		$method       = $this->request->param('__method',$this->request->method(),'strtoupper');
 		$rules        = $this->methodGroup->get($method);
 
 		foreach ($rules as $rule)
@@ -410,10 +410,13 @@ class Router
 			list($result,$routePath,$vars,$optVars) = $this->parseRoutPath($rule);
 			
 			if (empty($routePath['path']) || $result['path'] !== $routePath['path']) {
-				continue;
+				if (rtrim($routePath['path'],'/') . '/' !== $result['path']) {
+					continue;
+				}
 			}
-
-
+			
+			$this->request->path($routePath['path']);
+			
 			$combVars = array_merge($vars,$optVars);
 
 

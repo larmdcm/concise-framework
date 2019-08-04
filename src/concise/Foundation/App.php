@@ -5,7 +5,7 @@ namespace Concise\Foundation;
 use Concise\Container\Container;
 use Concise\Http\Response;
 use Concise\Error\Error;
-use Router;
+use Concise\Foundation\Facade\Route;
 use Concise\Exception\HttpException;
 use Concise\Exception\HttpResponseException;
 use Concise\Exception\ValidatorErrorException;
@@ -64,6 +64,12 @@ class App
 	public $env;
 
 	/**
+	 * 是否初始化
+	 * @var boolean
+	 */
+	protected $isInit;
+
+	/**
 	 * 初始化
 	 * @return void
 	 */
@@ -108,6 +114,8 @@ class App
 		// 初始化日期组件
 		Container::get('date',['dateTimeZone' => Config::get('date_time_zone')]);
 
+		$this->isInit = true;
+
 		return $this;
 	}
 
@@ -118,6 +126,9 @@ class App
 	 */
 	public function buildRoute ($name = 'mapRoute')
 	{
+		if ($this->getServiceContainer()->exists('mapCsrfToken')) {
+			$this->getServiceContainer('mapCsrfToken')->map();
+		}
 		if ($this->getServiceContainer()->exists($name)) {
 			return $this->getServiceContainer($name)->map();
 		}
@@ -136,11 +147,11 @@ class App
 	 */
 	public function run ()
 	{
-		$this->initialize();
+		is_null($this->isInit) && $this->initialize();
 		$this->buildRoute();
 		
 		try {
-			$result = Router::dispatch();
+			$result = Route::dispatch();
 			
 			if (is_object($result) && $result instanceof Response) {
 				return $result;

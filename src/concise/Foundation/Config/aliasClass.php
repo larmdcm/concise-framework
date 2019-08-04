@@ -13,10 +13,12 @@ return [
 	'Concise\Hash'        => 'Concise\Hash\Hash',
 	'Concise\Log'         => 'Concise\Log\Log',
 	'Concise\Nosql\Redis' => 'Concise\Nosql\Redis\Redis',
-	'Router'  			  => 'Concise\Foundation\Facade\Router',
+	'Route'  			  => 'Concise\Foundation\Facade\Route',
 	'Concise\Session'     => 'Concise\Foundation\Facade\Session',
 	'Concise\Validator'   => 'Concise\Validate\Validator',
 	'Concise\App'         => 'Concise\Foundation\App',
 	'Concise\Loader'      => 'Concise\Foundation\Loader',
-	'Concise\View'        => 'Concise\View\View'
+	'Concise\View'        => 'Concise\View\View',
+
+	'Concise\Http\Rest'   => 'Concise\Http\Rest\Rest'
 ];
