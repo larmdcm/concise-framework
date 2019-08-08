@@ -94,7 +94,7 @@ class Loader
 		if (isset(self::$classMap[$className])) {
 			return true;			
 		}
-		foreach (self::$paths as $v) 
+		foreach (self::$paths as $v)
 		{
 			// 搜索在自动加载路径内的
 			$names = [lcfirst($className),$className,ucfirst($className)];

@@ -2,12 +2,12 @@
 
 return [
 	'errors' => [
-		'class'     => 'Concise\Ioc\Provider\ErrorServiceProvider',
+		'class'     => 'Concise\Foundation\Provider\ErrorServiceProvider',
 		'arguments' => [],
 		'singleton' => true
 	],
 	'mapCsrfToken' => [
-		'class' 	=> 'Concise\Ioc\Provider\CsrfTokenMapServiceProvider',
+		'class' 	=> 'Concise\Foundation\Provider\CsrfTokenMapServiceProvider',
 		'arguments' => [],
 		'singleton' => true
 	]

@@ -19,6 +19,9 @@ class Redirect extends Response
 	 */
 	public function output ($data)
 	{
+		if (!empty($this->withData)) {
+			errors($this->withData);
+		}
 		$this->header['Location'] = $this->getTargetUrl();
 		return;
 	}

@@ -36,6 +36,11 @@ class Response
 	 */
 	protected $content;
 
+	/**
+	 * withData
+	 * @var array
+	 */
+	protected $withData;
 
 	// 构造函数初始化
 	public function __construct ($data = '',$code = 200,$header = [])
@@ -182,5 +187,37 @@ class Response
 	public function getContentType ()
 	{
 		return $this->contentType . ';' . 'charset=' . $this->charset;
+	}
+
+	/**
+	 * with data
+	 * @param  string $name  
+	 * @param  string $value 
+	 * @return object    
+	 */
+	public function with ($name,$value = '')
+	{
+		if (is_array($name)) {
+			foreach ($name as $k => $v) {
+				$this->withData[$k] = $v;
+			}
+		} else {
+			$this->withData[$name] = $value;
+		}
+		return $this;
+	}
+
+	/**
+     * 无方法执行
+     * @param  string $method 方法名称 
+     * @param  array $args   参数列表
+     * @return void
+     */
+	public function __call ($method,$args)
+	{
+        if (strpos($method,'with') !== false) {
+            return $this->with(lcfirst(substr($method,-(strlen($method) - 4))),$args[0]);
+        }
+        throw new \RuntimeException(__CLASS__ . "->" . $method . ' is not exists!');
 	}
 }

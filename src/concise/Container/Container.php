@@ -3,6 +3,7 @@
 namespace Concise\Container;
 
 use Concise\Ioc\Ioc;
+use Closure;
 
 class Container
 {
@@ -62,7 +63,7 @@ class Container
 	 */
 	public function has ($alias)
 	{
-		return array_key_exists($alias,$this->bindings) || array_key_exists($alias,$this->instances);
+		return isset($this->bindings[$alias]) || isset($this->instances[$alias]);
 	}
 	/**
 	 * 删除注入的类实例
@@ -71,7 +72,7 @@ class Container
 	 */
 	public function delete ($alias)
 	{
-		if (array_key_exists($alias,$this->instances)) {
+		if (isset($this->instances[$alias])) {
 			unset($this->instances[$alias]);
 		}
 		return true;
@@ -97,20 +98,38 @@ class Container
 	 * @return mixed         
 	 */
 	public function make ($alias,$params = [],$singleton = true)
-	{
-		if (!array_key_exists($alias, $this->bindings) && !array_key_exists($alias,$this->instances)) {
-			throw new \RuntimeException("{$alias} does not exist in the container");
+	{	
+		if (is_bool($params)) {
+			$singleton = $params;
+			$params    = [];
 		}
-		if (array_key_exists($alias, $this->instances)) {
+
+		if ($alias instanceof Closure) {
+			return call_user_func_array($alias,Ioc::getFuncParams($alias,$params));
+		}
+		
+		if (isset($this->instances[$alias]) && $singleton) {
 			return $this->instances[$alias];
 		}
-		if (is_callable($this->bindings[$alias])) {
-			$object = call_user_func_array($this->bindings[$alias],Ioc::getFuncParams($this->bindings[$alias],$params));
-		} else {
-			$object = Ioc::getInstance($this->bindings[$alias],$params);
+
+		
+		if (!isset($this->bindings[$alias])) {
+			$instance = Ioc::getInstance($alias,$params);
+			if ($singleton) {
+				$this->instances[$alias] = $object;
+			}
+			return $instance;
 		}
-		if ($singleton) {
-			$this->instances[$alias] = $object;
+
+		$concreate = $this->bindings[$alias];
+
+		if ($concreate instanceof Closure) {
+			$object = call_user_func_array($concreate,Ioc::getFuncParams($concreate,$params));
+		} else {
+			$object = Ioc::getInstance($concreate,$params);
+			if ($singleton) {
+				$this->instances[$alias] = $object;
+			}
 		}
 		return $object;
 	}
@@ -164,5 +183,29 @@ class Container
 	public static function flush ()
 	{
 		return static::getInstance()->clear();
+	}
+
+	/**
+	 * 执行类方法
+	 * @param  string $alias     
+	 * @param  string  $method    
+	 * @param  array  $arguments 
+	 * @param  boolean $singleton 
+	 * @return mixed         
+	 */
+	public function invokeMethod ($alias,$method = '',$arguments = [],$singleton = false)
+	{
+		if (is_bool($arguments)) {
+			$singleton = $arguments;
+			$arguments = [];
+		}
+
+		$instance =	$this->make($alias,[],$singleton);
+
+		if (!method_exists($instance, $method)) {
+			throw new \RuntimeException(get_class($instance) . "->{$method} {$method} Method Not Exists");
+		}
+
+		return call_user_func_array([$instance,$method],Ioc::getMethodParams(get_class($instance),$method,$arguments));
 	}
 }

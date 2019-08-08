@@ -169,6 +169,17 @@ if (!function_exists('redirect')) {
 	}
 }
 
+if ( !function_exists('back') ) {
+	/**
+	 * 返回上一页面
+	 * @param array $errors
+	 * @return void
+	 */
+	function back ($errors = []) {
+		return redirect(request()->server('HTTP_REFERER'))->with($errors);
+	}
+}
+
 if ( !function_exists('view') ) {
 	/**
 	 * 视图辅助函数
@@ -214,10 +225,13 @@ if ( !function_exists('errors') ) {
 	 */
 	function errors ($error = '') {
 		$errorsService = container('app')->getServiceContainer('errors');
-		if (empty($error)) {
-			return $errorsService->get();
+		if (is_null($error)) {
+			return $errorsService;
 		}
-		return $errorsService->set($error);
+		if (empty($error)) {
+			return $errorsService->all();
+		}
+		return $errorsService->append($error);
 	}
 }
 

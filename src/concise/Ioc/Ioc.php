@@ -3,15 +3,15 @@
 namespace Concise\Ioc;
 
 use Concise\Container\Container;
+use Closure;
 
 class Ioc
 {	
 
 	/**
 	 * 获取类对象实例
-     * @access public
 	 * @param  string $className 
-     * @param  array $params  
+   * @param  array $params  
 	 * @return object
 	 */
 	public static function getInstance ($className,$params = [])
@@ -23,7 +23,6 @@ class Ioc
 
 	/**
 	 * 执行类方法
-     * @access public
 	 * @param  string $className   
 	 * @param  string $methodsName 
 	 * @param  array $params 
@@ -42,7 +41,6 @@ class Ioc
 	}
 	/**
 	 * 获取类的方法参数
-     * @access public
 	 * @param  string $className  
 	 * @param  string $methodsName 
 	 * @param  array $arguments 
@@ -98,7 +96,6 @@ class Ioc
 
     /**
      * 获取函数的参数
-     * @access public
      * @param  mixed $func  
      * @param  array $arguments 
      * @return array   
@@ -135,5 +132,17 @@ class Ioc
             }
         }
         return $paramArr;
+    }
+
+    /**
+     * 绑定参数
+     * @param  object $concrete
+     * @param  array $arguments 
+     * @param  string $method 
+     * @return array
+     */
+    public static function bindParams ($concrete,$arguments = [],$method = '__construct')
+    {
+        return $concrete instanceof Closure ? static::getFuncParams($concrete,$arguments) : static::getMethodParams($concrete,$arguments,$method);
     }
 }

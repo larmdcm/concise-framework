@@ -74,6 +74,16 @@ class Request
      */
     protected $path;
 
+    /**
+     * 获取属性
+     * @param  string $attribute 
+     * @return mixed
+     */
+    public function __get ($attribute)
+    {
+        return $this->param($attribute,null);
+    }
+
 	/**
 	 * 获取post请求数据
 	 * @param  string $key     
@@ -390,6 +400,46 @@ class Request
 		}
 		return $caseArray ? explode('/',trim($params,'/')) : ltrim($params,'/');
     }
+
+    /**
+     * 获取访问域名或ip
+     * @return string
+     */
+    public function host ()
+    {
+        if (isset($_SERVER['HTTP_X_REAL_HOST'])) {
+            return $_SERVER['HTTP_X_REAL_HOST'];
+        }
+        return $this->server('HTTP_HOST');
+    }
+
+    /**
+     * 获取访问协议
+     * @return string
+     */
+    public function scheme ()
+    {
+        return $this->server('REQUEST_SCHEME');
+    }
+
+    /**
+     * 获取访问端口
+     * @return string
+     */
+    public function port ()
+    {
+        return $this->server('SERVER_PORT');
+    }
+
+    /**
+     * 获取完整域名
+     * @return string
+     */
+    public function domain ()
+    {
+        return $this->scheme() . '://' . $this->host();
+    }
+
     /**
      * 获取当前请求模块
      * @param string $module 

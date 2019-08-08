@@ -10,7 +10,7 @@ class FileSystem
 	 * @param  Closure $callback
 	 * @return mixed
 	 */
-	public function directorys ($directory,$callback)
+	public function directorys ($directory,$callback = null)
 	{
 		if (!is_dir($directory)) {
 			return false;

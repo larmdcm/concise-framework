@@ -3,7 +3,6 @@
 namespace Concise\Facade;
 
 use Concise\Container\Container;
-use Concise\Ioc\Ioc;
 
 abstract class Facade
 {
@@ -26,11 +25,12 @@ abstract class Facade
 		if (isset(static::$classInstance[$class]) && is_object(static::$classInstance[$class])) {
 			return static::$classInstance[$class];
 		}
-		$classInstance = Container::exists(lcfirst($class)) ? Container::get(lcfirst($class)) : null;
+		$aliasClass = lcfirst($class);
+		$classInstance = Container::exists($aliasClass) ? Container::get($aliasClass) : null;
 		if (!is_null($classInstance)) {
 			return $classInstance;
 		}
-		$instance = Ioc::getInstance($class);
+		$instance = Container::get($class,[],false);
 		static::$classInstance[$class] = $instance;
 		return $instance;
 	}	

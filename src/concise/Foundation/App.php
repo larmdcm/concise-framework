@@ -161,7 +161,7 @@ class App
 				$result = $result->fetch();
 			}
 		} catch (HttpException $e) {
-			throw $e;
+			return Error::responseHttpError($e);
 		} catch (HttpResponseException $e) {
 			return $e->getResponse();
 		} catch (ValidatorErrorException $e) {

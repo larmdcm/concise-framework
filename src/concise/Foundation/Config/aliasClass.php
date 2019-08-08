@@ -19,6 +19,5 @@ return [
 	'Concise\App'         => 'Concise\Foundation\App',
 	'Concise\Loader'      => 'Concise\Foundation\Loader',
 	'Concise\View'        => 'Concise\View\View',
-
 	'Concise\Http\Rest'   => 'Concise\Http\Rest\Rest'
 ];

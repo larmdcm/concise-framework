@@ -3,13 +3,6 @@
 namespace Concise\Routing;
 
 use Concise\Http\Request;
-use Concise\Routing\Route\Handle as RouteHandle;
-use Concise\Routing\Route\Group as RouteGroup;
-use Concise\Routing\Route\Rule as RouteRule;
-use Concise\Routing\Route\MethodGroup as RouteMethodGroup;
-use Concise\Routing\Route\RouteVar;
-use Concise\Routing\Route\RoutePath;
-use Concise\Routing\Route\RouteName;
 use Concise\Exception\RouteNotFoundException;
 
 class Route
@@ -69,6 +62,12 @@ class Route
 	protected $groupParams = [];
 
 	/**
+	 * 文档对象
+	 * @var object
+	 */
+	protected $document;
+
+	/**
 	 * 资源路由
 	 * @var array
 	 */
@@ -82,10 +81,11 @@ class Route
 		'destroy' => ['delete','/{id}','destroy'],
 	];
 
+	// 初始化
 	public function __construct (
-		Request $request,RouteGroup $group,RouteMethodGroup $methodGroup,RouteVar $routeVar,RoutePath $routePath,
-		RouteName $routeName
-	)
+		Request $request,Group $group,MethodGroup $methodGroup,RouteVar $routeVar,RoutePath $routePath,
+		RouteName $routeName,Document $document
+	)	
 	{
 		$this->request 	   = $request;
 		$this->group   	   = $group;
@@ -93,8 +93,14 @@ class Route
 		$this->routeVar    = $routeVar;
 		$this->routePath   = $routePath;
 		$this->routeName   = $routeName;
+		$this->document    = $document;
 	}
 
+	/**
+	 * get
+	 * @param  string $key 
+	 * @return mixed
+	 */
 	public function __get ($key) 
 	{
 		return $this->$key;
@@ -111,19 +117,19 @@ class Route
 		if (is_null($callback)) {
 			$groupParams = $this->groupParams;
 			$this->groupParams = [];
-			$this->group->create($groupParams)->after(function () use ($params) {
+			$this->group->after(function () use ($params) {
 				if (is_callable($params)) {
 					$params($this,$this->group);
 				} else if (is_string($params) && is_file($params)) {
 					include $params;
 				}
 				$this->currentAttachMethod = null;
-			});
+			},$this->group->create($groupParams));
 		} else {
-			$this->group->create($params)->after(function () use ($callback) {
+			$this->group->after(function () use ($callback) {
 				is_callable($callback) && $callback($this,$this->group);
 				$this->currentAttachMethod = null;
-			});
+			},$this->group->create($params));
 		}
 		return $this;
 	}
@@ -137,7 +143,7 @@ class Route
 	 */
 	public function rule (string $method = 'GET',string $rule = '/',$handle = null)
 	{
-		$rule = new RouteRule($method,$rule,$this->group->getGroupNumber(),$handle);
+		$rule = new Rule($method,$rule,$this->group->getGroupNumber(),$handle);
 		$this->methodGroup->attach($rule);
 		$this->currentAttachMethod = $method;
 		return $this;
@@ -276,27 +282,12 @@ class Route
 	 */
 	public function doc ($options = [])
 	{
-		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['doc' => $options]);
+		if (!is_null($this->currentAttachMethod)) {
+			$rule = $this->methodGroup->getCurrentRule($this->currentAttachMethod);
+			$this->document->attach($rule,$options);
+		}
 		$this->groupParams['doc'] = $options;
 		return $this;
-	}
-
-	/**
-	 * build doc
-	 * @param string $module 
-	 * @param string $prefix
-	 * @param string $name
-	 * @return object
-	 */
-	public function buildApiDocumentRoute ($module = 'ApiDoc',$prefix = 'doc',$name = 'apidocument')
-	{
-		return $this->group(['module' => $module,'prefix' => $prefix],function () {
-			 $this->get('home',"ApiDocumentController@home")->name($name . '.home');
-			 $this->get('index',"ApiDocumentController@index")->name($name . '.index');
-			 $this->post('show',"ApiDocumentController@show")->name($name . '.show');
-			 $this->post('get',"ApiDocumentController@get")->name($name . '.get');
-			 $this->post('detail',"ApiDocumentController@detail")->name($name . '.detail');
-		});
 	}
 
 	/**
@@ -319,8 +310,8 @@ class Route
 	 */
 	public function route ($name,$params = [])
 	{
-		$rule = $this->routeName->get($name);
-		$baseUrl = $this->request->server('REQUEST_SCHEME') . '://' . $this->request->server('HTTP_HOST');
+		$rule   = $this->routeName->get($name);
+		$domain = $this->request->domain();
 		list($result,$routePath,$vars,$optVars) = $this->parseRoutPath($rule);
 		$vars = array_merge($result['optVars'],$result['vars']);
 		$paramPath = [];
@@ -336,7 +327,7 @@ class Route
 		if (!empty($params)) {
 			$queryStr = "?" . http_build_query($params);
 		}
-		return $baseUrl . $result['path'] . (empty($paramPath) ? '' : '/' . implode('/', $paramPath)) . $queryStr;
+		return $domain . $result['path'] . (empty($paramPath) ? '' : '/' . implode('/', $paramPath)) . $queryStr;
 	}
 
 	/**
@@ -356,15 +347,15 @@ class Route
 			$this->{$method}($url,$action)->name($routeName);
 		}
 	}
-
+	
 	/**
 	 * 解析路由路径
 	 * @param  Rule   $rule 
 	 * @return array
 	 */
-	protected function parseRoutPath ($rule)
+	public function parseRoutPath ($rule)
 	{
-		$path         = '/' . $this->request->pathinfo();
+		$path    = '/' . $this->request->pathinfo();
 		$result  = $this->routeVar->rule($rule->rule)->parse();
 		$vars 	 = $result['vars'];
 		$optVars = $result['optVars'];
@@ -437,7 +428,7 @@ class Route
 			
 			$this->request->params($routeParams);
 			$this->routeParams = $routeParams;
-			$result = RouteHandle::make($rule,$this)->prev();
+			$result = Handle::make($rule,$this)->prev();
 			$this->methodGroup->after();
 			return $result;
 		}

@@ -111,7 +111,7 @@ class Auth
 	 * 保存
 	 * @param  object $user  
 	 * @param  array $params 
-	 * @param  mixed $mixed 
+	 * @param  string $mixed 
 	 * @return mixed        
 	 */
 	public function save ($user = [],$params = [],$mixed = '')
