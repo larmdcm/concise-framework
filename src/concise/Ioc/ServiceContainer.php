@@ -85,7 +85,7 @@ class ServiceContainer
 	}
 
 	/**
-	 * 获取服务提供者是否正常到容器
+	 * 获取服务提供者是否注册到容器
 	 * @param  string $serviceName 
 	 * @return bool              
 	 */

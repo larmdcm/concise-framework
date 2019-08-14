@@ -6,8 +6,13 @@ return [
 		'arguments' => [],
 		'singleton' => true
 	],
-	'mapCsrfToken' => [
+	'csrfToken' => [
 		'class' 	=> 'Concise\Foundation\Provider\CsrfTokenMapServiceProvider',
+		'arguments' => [],
+		'singleton' => true
+	],
+	'middlewareService' => [
+		'class' => 'Concise\Foundation\Provider\MiddlewareServiceProvider',
 		'arguments' => [],
 		'singleton' => true
 	]

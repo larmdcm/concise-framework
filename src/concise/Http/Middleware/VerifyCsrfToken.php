@@ -4,6 +4,7 @@ namespace Concise\Http\Middleware;
 
 use Concise\Http\Request;
 use Concise\Exception\TokenMismatchException;
+use Concise\Foundation\App;
 
 class VerifyCsrfToken
 {
@@ -20,6 +21,15 @@ class VerifyCsrfToken
 	 * @var string
 	 */
 	protected $token = '__token';
+
+	/**
+	 * 初始化
+	 * @return void
+	 */
+	public function __construct ()
+	{
+		$this->token = App::$serviceContainer->get('csrfToken')->token;
+	}
 
 	/**
 	 * 处理
@@ -50,7 +60,7 @@ class VerifyCsrfToken
 			return false;
 		}
 		$csrfToken = session($this->token);
-		session()->delete($this->token);
+		session($this->token,null);
 		return $csrfToken === $token;
 	}
 

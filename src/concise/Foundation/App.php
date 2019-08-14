@@ -70,6 +70,12 @@ class App
 	protected $isInit;
 
 	/**
+	 * 注册初始化访问提供者列表
+	 * @var array
+	 */
+	protected $mapService = ['csrfToken'];
+
+	/**
 	 * 初始化
 	 * @return void
 	 */
@@ -116,6 +122,10 @@ class App
 
 		$this->isInit = true;
 
+		array_walk($this->mapService,function ($service) {
+			$this->getServiceContainer($service)->map();
+		});
+
 		return $this;
 	}
 
@@ -126,9 +136,6 @@ class App
 	 */
 	public function buildRoute ($name = 'mapRoute')
 	{
-		if ($this->getServiceContainer()->exists('mapCsrfToken')) {
-			$this->getServiceContainer('mapCsrfToken')->map();
-		}
 		if ($this->getServiceContainer()->exists($name)) {
 			return $this->getServiceContainer($name)->map();
 		}

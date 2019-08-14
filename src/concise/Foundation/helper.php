@@ -208,6 +208,9 @@ if (!function_exists('session')) {
 		 if (empty($name) && empty($value)) {
 		 	 return $session;
 		 }
+	    if (!empty($name) && is_null($value)) {
+		 	return $session->delete($name);
+		 }
 		 if (!empty($name) && empty($value)) {
 		 	return $session->get($name);
 		 }
@@ -295,5 +298,25 @@ if ( !function_exists('public_path') ) {
 	 */
 	function public_path ($path = '') {
 		return base_url('public/' . $path);
+	}
+}
+
+if ( !function_exists('csrf_token') ) {
+	/**
+	 * 获取csrf token
+	 * @return string
+	 */
+	function csrf_token () {
+		return app()->getServiceContainer('csrfToken')->map()->getToken();
+	}
+}
+
+if ( !function_exists('csrf_field') ) {
+	/**
+	 * 获取csrf token 表单域
+	 * @return string
+	 */
+	function csrf_field () {
+		return sprintf('<input type="hidden" name="%s" value="%s">',app()->getServiceContainer('csrfToken')->token,csrf_token());
 	}
 }

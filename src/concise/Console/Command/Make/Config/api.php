@@ -17,7 +17,7 @@ return [
 		 'user_model_key'      => "id",
 		// token生成函数
 		'token_generate_func'  => function ($mixed) {
-			return \Concise\Hash\Hash::make($mixed . Container::get('request')->server('REQUEST_TIME') . md5(mt_rand(111111,999999)))->get();
+			return \Concise\Hash\Hash::make($mixed . request()->server('REQUEST_TIME') . md5(mt_rand(111111,999999)))->get();
 		},
 		// token获取错误
 		'token_get_error_msg'    => 'token get error.',

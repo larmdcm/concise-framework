@@ -3,6 +3,7 @@
 namespace Concise\Http;
 
 use Concise\Foundation\Config;
+use Concise\Foundation\App;
 
 class Middleware
 {
@@ -17,6 +18,21 @@ class Middleware
 	 * @var Closure
 	 */
 	protected $next;
+
+	/**
+	 * middleware service provider
+	 * @var MiddlewareServiceProvider
+	 */
+	protected $service;
+
+	/**
+	 * 初始化
+	 * @return void
+	 */
+	public function __construct ()
+	{
+		$this->service = App::$serviceContainer->get('middlewareService');
+	}
 
 	/**
 	 * import
@@ -44,7 +60,16 @@ class Middleware
 		if (is_null($middleware)) {
 			return ;
 		}
-		$middleware = $this->build($middleware);
+		$middlewareGroups = $this->service->getMiddlewareGroup($middleware);
+		if (!is_null($middlewareGroups)) {
+			array_walk($middlewareGroups, function ($middleware) {
+				$this->add($middleware);
+			});
+			return;
+		}
+		$routeMiddleware = $this->service->getRouteMiddleware($middleware);
+		$middleware = is_null($routeMiddleware) ? $this->build($middleware) : $this->build($routeMiddleware);
+
 		if ($middleware) {
 			$this->queue[] = $middleware;
 		}
@@ -68,21 +93,21 @@ class Middleware
 		if (empty($middleware)) {
 			return null;
 		}
-		$middleware  = explode(':', $middleware);
-		$classNames  =  ["\\" . Config::get('app_namespace','App') . "\\Middleware\\" . ucfirst($middleware[0]),
-						"\\Concise\\Http\\Middleware\\" . ucfirst($middleware[0]),
-						"\\Concise\\Http\\Rest\\Middleware\\" . ucfirst($middleware[0])];
+		$middlewares = explode("@",$middleware);
 
-		$method = count($middleware) > 1 ? $middleware[1] : 'handle';
-		foreach ($classNames as $className) {
-			if (class_exists($className)) {
-				return [new $className,$method];
+		$middleware  = $middlewares[0];
+		$method      = count($middlewares) > 1 ? $middlewares[1] : 'handle';
+
+		if (!class_exists($middleware)) {
+			$namespaces = array_filter($this->service->getNamespace(),function ($namespace) use ($middleware) {
+				return class_exists(sprintf("\\%s\\%s",$namespace,$middleware));
+			});
+			if (empty($namespaces)) {
+				return null;
 			}
+			$middleware = sprintf("\\%s\\%s",$namespaces[0],$middleware);
 		}
-		if (class_exists($middleware[0])) {
-			return [new $middleware[0],$method];
-		}
-		return null;		
+		return [new $middleware,$method];
 	}
 
 	public function next ($next)
