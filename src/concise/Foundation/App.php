@@ -106,6 +106,11 @@ class App
 			$this->env->load($envFile);
 		}
 
+		// 配置config路径
+		Config::setConfigPath(Env::get('config_path'));
+		// 初始化日期组件
+		Container::get('date',['dateTimeZone' => Config::get('date_time_zone')]);
+		
 		static::$container = Container::getInstance();
 
 		static::$serviceContainer = ServiceContainer::getInstance($this->getServiceContainerConfig());
@@ -115,10 +120,6 @@ class App
 		if (is_null(static::$mod)) {
 			static::$mod   = request()->isCli() ? 'cli' : 'web';
 		}
-		// 配置config路径
-		Config::setConfigPath(Env::get('config_path'));
-		// 初始化日期组件
-		Container::get('date',['dateTimeZone' => Config::get('date_time_zone')]);
 
 		$this->isInit = true;
 
@@ -140,7 +141,6 @@ class App
 			return $this->getServiceContainer($name)->map();
 		}
 		$routeFile = static::$container->get('env')->get('route_path') . '/route.php';
-
 		if (!is_file($routeFile)) {
 			throw new \RuntimeException("route file not exists");
 		}
@@ -156,7 +156,7 @@ class App
 	{
 		is_null($this->isInit) && $this->initialize();
 		$this->buildRoute();
-		
+
 		try {
 			$result = Route::dispatch();
 			

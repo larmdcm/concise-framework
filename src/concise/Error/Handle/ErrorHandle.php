@@ -105,7 +105,6 @@ class ErrorHandle implements ErrorHandleInterface
 	public function handle ($errno,$errmsg,$errfile,$errline,$exceptionName = '')
 	{
 		$append = !empty($exceptionName) ? ['Exception' => $exceptionName] : [];
-
         Log::write(sprintf("%s@%s %s",$errmsg,$errfile,$errline),'error',$append);
 
 		if (($response = $this->customHandle($errno,$errmsg,$errfile,$errline,$exceptionName)) !== false) {

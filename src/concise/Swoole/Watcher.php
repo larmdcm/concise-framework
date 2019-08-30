@@ -1,6 +1,6 @@
 <?php
 
-namespace Concise\Server;
+namespace Concise\Swoole;
 
 use Concise\Foundation\Facade\FileSystem;
 

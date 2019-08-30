@@ -1,6 +1,7 @@
 <?php
   for ($i = 0; $i < count($traces); $i++) {
-     if ($traces[$i]['file'] == $errfile) {
+
+     if (isset($traces[$i]['file']) && $traces[$i]['file'] == $errfile) {
        break;
      }
      unset($traces[$i]);

@@ -3,7 +3,7 @@
 namespace Concise\Console\Command;
 
 use Concise\Console\Console;
-use Concise\Server\Event\Event as SwooleEvent;
+use Concise\Swoole\Event\Event as SwooleEvent;
 use Concise\Exception\ClassNotException;
 use Concise\Foundation\App;
 
@@ -45,10 +45,11 @@ class SwooleServer extends Console
 		$make = isset($args['make']) ? $args['make'] : 'web_socket';
 
 		$make = preg_replace_callback('/([-_]+([a-z]{1}))/i',function($matches){ return strtoupper($matches[2]); },$make);
-		$serverHandle = '\Concise\Server\ServerHandle\\' . ucfirst($make);
+		$serverHandle = '\Concise\Swoole\Server\\' . ucfirst($make);
 		if (!class_exists($serverHandle)) {
 			throw new ClassNotException("{$serverHandle} Class Not Exists",$serverHandle);
 		}
+		
 		$this->server = new $serverHandle();
 
 		if (isset($args['stop'])) return $this->server->stop(function ($result,$message) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Concise\Server\Event;
+namespace Concise\Swoole\Event;
 
 trait Event
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Concise\Server;
+namespace Concise\Swoole;
 
 use Concise\Container\Container;
 use Concise\Foundation\Config;
@@ -188,7 +188,7 @@ abstract class Server
 		 	'task_worker_num' 		=> self::$swooleConfig['task_worker_num'],
 		 	'enable_static_handler' => self::$swooleConfig['enable_static_handler'],
 		 	'document_root'         => empty(self::$swooleConfig['document_root']) 
-		 							   ? rtrim(Container::get('env')->get('root_path','/')) . '/public' : self::$swooleConfig['document_root'],
+		 							   ? rtrim(Container::get('env')->get('base_path','/')) . '/public' : self::$swooleConfig['document_root'],
 		    'daemonize'             => $this->daemon,
 
 		    'pid_file'              => $this->getPidFilePath()
@@ -294,9 +294,9 @@ abstract class Server
 	public function onRequest ($request, $response)
 	{
         // 保存swoole request object
-       	!Container::exists('swooleRequest') && Container::set('swooleRequest',$request);
+       	Container::set('swooleRequest',$request);
         // 保存swoole response object
-       	!Container::exists('swooleResponse') && Container::set('swooleResponse',$response);
+       	Container::set('swooleResponse',$response);
 
         $this->notifyEvent('onRequest',[$request,$response]);
         
@@ -369,6 +369,7 @@ abstract class Server
 				$_POST[$k] = $v; 
 			}
 		}
+
 		// 执行应用响应
 		try {
 			ob_start();

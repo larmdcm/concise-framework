@@ -1,8 +1,8 @@
 <?php
 
-namespace Concise\Server\ServerHandle;
+namespace Concise\Swoole\Server;
 
-use Concise\Server\Server as BaseServer;
+use Concise\Swoole\Server as BaseServer;
 use Concise\Container\Container;
 
 class HttpServer extends BaseServer
