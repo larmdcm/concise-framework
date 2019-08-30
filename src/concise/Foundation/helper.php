@@ -6,6 +6,7 @@ use Concise\Foundation\App;
 use Concise\View\View;
 use Concise\Foundation\Config;
 use Concise\Foundation\Facade\Cookie;
+use Concise\Collection\Collection;
 
 if ( !function_exists('p') ) 
 {
@@ -218,6 +219,16 @@ if (!function_exists('session')) {
 	}
 }
 
+if ( !function_exists('collection') ) {
+	/**
+	 * 获取集合
+	 * @param  array $items 
+	 * @return Concise\Collection\Collection
+	 */
+	function collection ($items = []) {
+		return Collection::make($items);
+	}
+}
 
 if ( !function_exists('errors') ) {
 	/**

@@ -6,7 +6,7 @@ class Rule
 {
 	protected $method;
 
-	protected $rule;
+	protected $path;
 
 	protected $groupNumber;
 
@@ -23,10 +23,10 @@ class Rule
 	protected $name;
 
 
-	public function __construct ($method = 'GET',$rule = '',$groupNumber = -1,$handle = null,$middleware = [],$prefix = '',$namespace = '',$module = '',$name = '')
+	public function __construct ($method = 'GET',$path = '',$groupNumber = -1,$handle = null,$middleware = [],$prefix = '',$namespace = '',$module = '',$name = '')
 	{
 		$this->method 	   = strtoupper($method);
-		$this->rule 	   = $rule;
+		$this->path 	   = $path;
 		$this->groupNumber = $groupNumber;
 		$this->handle 	   = $handle;
 		$this->middleware  = $middleware;

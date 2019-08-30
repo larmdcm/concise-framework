@@ -15,7 +15,7 @@ class CsrfTokenMapServiceProvider
 	public function map ()
 	{
 		if (empty(session($this->token))) {
-			$token = hash($this->hashType, time() . mt_rand(111111,999999));
+			$token = hash($this->hashType, microtime(true) . mt_rand(111111,999999));
 			session()->set($this->token,$token);
 		}
 

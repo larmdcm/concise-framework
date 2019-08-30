@@ -13,7 +13,7 @@ class CurrecyHandle extends Handle
 {
 	public function exec (Request $request)
 	{
-		list($handle,$className,$module) = static::buildClass($this->handler,$this->rule,$this->groupParams);
+		list($handle,$className,$module) = $this->buildClass();
 
 		$request->module($module);
 		
@@ -21,18 +21,22 @@ class CurrecyHandle extends Handle
 
 		$methodName = $handle[1];
 
+		if (!class_exists($className)) {
+			throw new ClassNotException("{$className} Class Not Exists",$className);
+		}
+		
 		return Container::set($className,$className)->invokeMethod($className,$methodName,$request->param());
 	}
 
 	/**
 	 * build class name
-	 * @param  string $handler  
-	 * @param  object $rule        
-	 * @param  array $groupParams 
 	 * @return array              
 	 */
-	public static function buildClass ($handler,$rule,$groupParams)
+	public function buildClass ()
 	{
+		$handler 	 = $this->handler;
+		$rule 		 = $this->rule;
+		$groupParams = $this->groupParams;
 		if (strpos($handler, "@") === false) {
 			throw new HttpException(500,"Route Handle Parse Error");
 		}
@@ -60,9 +64,6 @@ class CurrecyHandle extends Handle
 			$namespace = Config::get('app_namespace','App') . "\\Controller";
 		}
 		$className = sprintf("%s%s\\%s",$namespace,$module,$handle[0]);
-		if (!class_exists($className)) {
-			throw new ClassNotException("{$className} Class Not Exists",$className);
-		}
 
 		return [$handle,$className,$module];
 	}

@@ -64,4 +64,9 @@ class Handle
 	{
 		throw new \RuntimeException("Route Not Found");
 	}
+
+	public function getGroupParams ()
+	{
+		return $this->groupParams;
+	}
 }

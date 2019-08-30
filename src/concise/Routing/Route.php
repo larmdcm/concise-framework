@@ -81,6 +81,12 @@ class Route
 		'destroy' => ['delete','/{id}','destroy'],
 	];
 
+	/**
+	 * 当前存在的规则
+	 * @var array
+	 */
+	protected $rules = [];
+
 	// 初始化
 	public function __construct (
 		Request $request,Group $group,MethodGroup $methodGroup,RouteVar $routeVar,RoutePath $routePath,
@@ -137,14 +143,15 @@ class Route
 	/**
 	 * 添加路由规则
 	 * @param  string $method 
-	 * @param  string $rule   
+	 * @param  string $path   
 	 * @param  mixed $handle 
 	 * @return object         
 	 */
-	public function rule (string $method = 'GET',string $rule = '/',$handle = null)
+	public function rule (string $method = 'GET',string $path = '/',$handle = null)
 	{
-		$rule = new Rule($method,$rule,$this->group->getGroupNumber(),$handle);
+		$rule = new Rule($method,$path,$this->group->getGroupNumber(),$handle);
 		$this->methodGroup->attach($rule);
+		$this->rules[] = $rule;
 		$this->currentAttachMethod = $method;
 		return $this;
 	}
@@ -356,7 +363,7 @@ class Route
 	public function parseRoutPath ($rule)
 	{
 		$path    = '/' . $this->request->pathinfo();
-		$result  = $this->routeVar->rule($rule->rule)->parse();
+		$result  = $this->routeVar->rule($rule->path)->parse();
 		$vars 	 = $result['vars'];
 		$optVars = $result['optVars'];
 

@@ -87,11 +87,11 @@ class App
 
 		$envs = [
 			'base_path'    => $this->rootPath,
-			'app_path'     => $this->rootPath . '/app',
-			'config_path'  => $this->rootPath . '/config',
-			'route_path'   => $this->rootPath . '/route',
-			'runtime_path' => $this->rootPath . '/runtime',
-			'view_path'    => $this->rootPath . '/views'
+			'app_path'     => $this->rootPath . DIRECTORY_SEPARATOR . 'app',
+			'config_path'  => $this->rootPath . DIRECTORY_SEPARATOR . 'config',
+			'route_path'   => $this->rootPath . DIRECTORY_SEPARATOR . 'route',
+			'runtime_path' => $this->rootPath . DIRECTORY_SEPARATOR . 'runtime',
+			'view_path'    => $this->rootPath . DIRECTORY_SEPARATOR . 'views'
 		];
 		$this->env = Container::get('env');
 
