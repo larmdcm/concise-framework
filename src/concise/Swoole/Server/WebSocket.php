@@ -39,7 +39,7 @@ class WebSocket extends HttpServer
      */
     public function onOpen($ws, $request) 
     {
-	     $this->notifyEvent('onOpen',[$ws, $request]);
+	   $this->trigger('onOpen',[$ws, $request]);
     }
     /**
      * 监听ws消息事件
@@ -48,6 +48,6 @@ class WebSocket extends HttpServer
      */
     public function onMessage($ws, $frame) 
     {
-       $this->notifyEvent('onMessage',[$ws, $frame]);
+       $this->trigger('onMessage',[$ws, $frame]);
     }
 } 

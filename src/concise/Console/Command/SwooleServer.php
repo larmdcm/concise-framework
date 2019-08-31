@@ -3,7 +3,7 @@
 namespace Concise\Console\Command;
 
 use Concise\Console\Console;
-use Concise\Swoole\Event\Event as SwooleEvent;
+use Concise\Swoole\Event\SwooleEvent;
 use Concise\Exception\ClassNotException;
 use Concise\Foundation\App;
 

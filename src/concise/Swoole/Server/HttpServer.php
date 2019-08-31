@@ -47,7 +47,7 @@ class HttpServer extends BaseServer
 	 */
 	public function onTask ($server, $taskId, $workerId, $data)
 	{
-         $this->notifyEvent('onTask',[$server, $taskId, $workerId, $data]);
+         $this->trigger('onTask',[$server, $taskId, $workerId, $data]);
 	}
 	/**
 	 * 任务处理完毕返回
@@ -58,7 +58,7 @@ class HttpServer extends BaseServer
 	 */
 	public function onFinish ($server, $taskId, $data)
 	{
-         $this->notifyEvent('onFinish',[$server, $taskId, $data]);
+         $this->trigger('onFinish',[$server, $taskId, $data]);
 	}
 	/**
 	 * 连接关闭
@@ -68,6 +68,6 @@ class HttpServer extends BaseServer
 	 */
 	public function onClose ($ws,$fd)
 	{
-         $this->notifyEvent('onClose',[$ws,$fd]);
+         $this->trigger('onClose',[$ws,$fd]);
 	}
 }

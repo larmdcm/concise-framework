@@ -6,9 +6,12 @@ use Concise\Container\Container;
 use Concise\Foundation\Config;
 use Concise\Foundation\Facade\Env;
 use Swoole\Process;
+use Concise\Swoole\Event\Event;
 
 abstract class Server
 {
+	use Event;
+
 	/**
 	 *  server object
 	 * @var object
@@ -63,12 +66,6 @@ abstract class Server
 	];
 
 	/**
-	 * 事件列表
-	 * @var array
-	 */
-	public $events = [];
-
-	/**
 	 * 是否守护进程
 	 * @var bool
 	 */
@@ -114,44 +111,12 @@ abstract class Server
 		// 配置初始化
 		self::$swooleConfig = array_merge(self::$swooleConfig,Config::scope('swoole')->get() ? Config::scope('swoole')->get() : []);
 	}
+	
 	/**
 	 * 启动
 	 * @return void
 	 */
 	abstract public function start();
-
-	/**
-	 * 事件绑定
-	 * @param  string $event    
-	 * @param  mixed $callback 
-	 * @return object           
-	 */
-	public function on ($event,$callback)
-	{
-		if (strtolower(substr($event, 0,2)) !== 'on') {
-			$event =  'on' . $event;
-		}
-		$this->events[strtolower($event)] = $callback;
-		return $this;
-	}
-
-	/**
-	 * 通知事件
-	 * @param  string $event 
-	 * @param  array $params 
-	 * @return mixed
-	 */
-	public function notifyEvent ($event,$params)
-	{
-		if (strtolower(substr($event, 0,2)) !== 'on') {
-			$event =  'on' . $event;
-		}
-		$event = strtolower($event);
-		if (isset($this->events[$event])) {
-			return call_user_func_array($this->events[$event],$params);
-		}
-		return $this;
-	}
 
 	/**
 	 * 设置或获取heatRestart
@@ -275,7 +240,7 @@ abstract class Server
 	{
 		 swoole_set_process_name("concise_swoole_server");
 
-         $this->notifyEvent('onWorkerStart',[$server,$workerId]);
+         $this->trigger('onWorkerStart',[$server,$workerId]);
          
 		 if ($workerId == 0 && $this->heatRestart) {
 		 	$path = dirname(Env::get('app_path'));
@@ -298,7 +263,7 @@ abstract class Server
         // 保存swoole response object
        	Container::set('swooleResponse',$response);
 
-        $this->notifyEvent('onRequest',[$request,$response]);
+        $this->trigger('onRequest',[$request,$response]);
         
         if($request->server['request_uri'] == '/favicon.ico') {
     	    $response->header("Content-Type", "text/html; charset=utf-8");
