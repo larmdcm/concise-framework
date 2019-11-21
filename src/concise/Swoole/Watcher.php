@@ -91,14 +91,12 @@ class Watcher
 		if (extension_loaded('swoole')) {
 		    swoole_event_add($this->inotify, function ($fd) {
 			    $events = inotify_read($fd);
-			    if ($events) {
-			       call_user_func_array($this->callback, [$events]);
-			    }
+		        $events && call_user_func_array($this->callback, [$events]);
 			});
 		} else {
 			 while (true) {
 	             $events = inotify_read($this->inotify);
-	             call_user_func_array($this->callback, [$events]);
+	             $events && call_user_func_array($this->callback, [$events]);
 	         }
 		}
 	}

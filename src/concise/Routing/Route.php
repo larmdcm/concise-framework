@@ -66,7 +66,7 @@ class Route
 	 * @var object
 	 */
 	protected $document;
-
+	
 	/**
 	 * 资源路由
 	 * @var array
@@ -148,7 +148,8 @@ class Route
 	 * @return object         
 	 */
 	public function rule (string $method = 'GET',string $path = '/',$handle = null)
-	{
+	{	
+		$method = strtoupper($method);
 		$rule = new Rule($method,$path,$this->group->getGroupNumber(),$handle);
 		$this->methodGroup->attach($rule);
 		$this->rules[] = $rule;
@@ -265,7 +266,9 @@ class Route
 	 */
 	public function namespace ($namespace)
 	{
-		!is_null($this->currentAttachMethod) && $this->methodGroup->setRuleParams($this->currentAttachMethod,['namespace' => $namespace]);
+		if (!is_null($this->currentAttachMethod)) {
+			$this->methodGroup->setRuleParams($this->currentAttachMethod,['namespace' => $namespace]);
+		}
 		$this->groupParams['namespace'] = $namespace;
 		return $this;
 	}

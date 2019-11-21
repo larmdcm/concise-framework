@@ -59,12 +59,12 @@ class CurrecyHandle extends Handle
 		if ($rule->namespace !== '') {
 			$namespace = $rule->namespace;
 		}
-
 		if (empty($namespace)) {
 			$namespace = Config::get('app_namespace','App') . "\\Controller";
 		}
-		$className = sprintf("%s%s\\%s",$namespace,$module,$handle[0]);
 
+		$className = sprintf("%s%s\\%s",$namespace,$module,$handle[0]);
+		
 		return [$handle,$className,$module];
 	}
 }

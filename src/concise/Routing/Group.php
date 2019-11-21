@@ -62,7 +62,7 @@ class Group
 
 	public function getGroupNumber ()
 	{
-		return $this->groupNumbers;
+		return empty($this->groupNumbers) ? -1 : $this->groupNumbers;
 	}
 
 	public function getDefaultParams ()

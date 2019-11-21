@@ -257,7 +257,7 @@ if ( !function_exists('route') ) {
 	 * @return string
 	 */
 	function route ($name,$params = []) {
-		return container('router')->route($name,$params);
+		return container('route')->route($name,$params);
 	}
 }
 

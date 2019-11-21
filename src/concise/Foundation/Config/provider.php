@@ -15,5 +15,10 @@ return [
 		'class' => 'Concise\Foundation\Provider\MiddlewareServiceProvider',
 		'arguments' => [],
 		'singleton' => true
+	],
+	'mapAnnotation' => [
+		'class' 	=> 'Concise\Foundation\Provider\AnnotationServiceProvider',
+		'arguments' => [],
+		'singleton' => true
 	]
 ];

@@ -73,7 +73,7 @@ class App
 	 * 注册初始化访问提供者列表
 	 * @var array
 	 */
-	protected $mapService = ['csrfToken'];
+	protected $mapService = ['csrfToken','mapAnnotation'];
 
 	/**
 	 * 初始化
