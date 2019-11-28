@@ -52,6 +52,7 @@ abstract class Annotation
 	/**
 	 * 扫描目录解析资源
 	 * @param  string  $dir      
+	 * @param  string  $method      
 	 * @param  boolean $isMulits 
 	 * @return void          
 	 */

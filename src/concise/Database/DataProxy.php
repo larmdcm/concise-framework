@@ -21,6 +21,23 @@ class DataProxy implements ArrayAccess
 		$this->data = $data;
 	}
 
+	/**
+	 * 获取数据是否为空
+	 * @return boolean
+	 */
+	public function isEmpty ()
+	{
+		return empty($this->data);
+	}
+
+	/**
+	 * 返回array数组
+	 * @return array
+	 */
+	public function toArray ()
+	{
+		return $this->isEmpty() ? [] : $this->data;
+	}
 
 	// getattr and setattr
 	public function __get ($key)

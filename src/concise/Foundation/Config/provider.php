@@ -20,5 +20,10 @@ return [
 		'class' 	=> 'Concise\Foundation\Provider\AnnotationServiceProvider',
 		'arguments' => [],
 		'singleton' => true
+	],
+	'applicationService' => [
+		'class' 	=> 'Concise\Foundation\Provider\ApplicationServiceProvider',
+		'arguments' => [],
+		'singleton' => true
 	]
 ];

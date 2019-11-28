@@ -4,6 +4,7 @@ namespace Concise\Database;
 
 use PDO;
 use Concise\Collection\Collection;
+use Concise\Database\Exception\FailException;
 
 class Query
 {
@@ -158,11 +159,11 @@ class Query
 	 * @param  \Closure $callback 
 	 * @return void 
 	 */
-	public function transaction ($callback)
+	public function transaction (\Closure $callback)
 	{
 		try {
 			$this->beginTransaction();
-			$callback();
+			call_user_func($callback,$this);
 			$this->commit();
 		} catch (\Exception $e) {
 			$this->rollback();
@@ -243,7 +244,6 @@ class Query
 		$buidler = $this->getBuilder();
 		$resultField = '';
 		array_walk($field,function ($value,$key) use ($buidler,&$resultField) {
-			
 			if (is_array($value)) {
 				$key 	= array_keys($value)[0];
 				$value  = array_values($value)[0];
@@ -380,6 +380,43 @@ class Query
 	}
 
 	/**
+	 * 设置字段
+	 * @param array $fields 
+	 * @param string $type   
+	 */
+	public function setField ($fields,$type = 'incrment')
+	{
+		return $this->getConnection()->executeSqlPrepare(
+			$this->getBuilder()->setField($this->getTableName(),$fields,
+				$this->parseWhere(),$type
+			)
+		);
+	}	
+
+	/**
+	 * 字段自增
+	 * @param string  $field 
+	 * @param integer $step  
+	 * @return mixed
+	 */
+	public function incrment ($field,$step = 1)
+	{
+		return $this->setField([$field => $step],'incrment');
+	}
+
+	/**
+	 * 字段自减
+	 * @param string  $field 
+	 * @param integer $step  
+	 * @return mixed
+	 */
+	public function decrement ($field,$step = 1)
+	{
+		return $this->setField([$field => $step],'decrement');
+	}
+
+
+	/**
 	 * 执行删除
 	 * @param  mixed $condtion  
 	 * @param  string $tableName 
@@ -461,13 +498,36 @@ class Query
 
 	/**
 	 * 执行select查询单条
-	 * @return stdClass
+	 * @return DataProxy
 	 */
 	public function find ()
 	{
 		return $this->createDataProxy(
 			$this->getConnection()->querySqlPrepare($this->limit(1)->buildSelectSqlPrepare())->fetch(PDO::FETCH_ASSOC)
 		);
+	}
+
+	/**
+	 * 查询当条不存在抛出异常
+	 * @return DataProxy
+	 */
+	public function findOrFail ()
+	{
+		$result = $this->find();
+		if (is_null($result)) {
+			throw new FailException();
+		}
+		return $result;
+	}
+
+	/**
+	 * 查询当条不存在返回空数组
+	 * @return DataProxy
+	 */
+	public function findOrEmpty ()
+	{
+		$result = $this->find();
+		return is_null($result) ? [] : $result;
 	}
 
 	/**
@@ -533,7 +593,7 @@ class Query
 	 * 解析where
 	 * @return SqlPrepare
 	 */
-	public function parseWhere ()
+	private function parseWhere ()
 	{
 		$buidler = $this->getBuilder();
 		$sql  	 = '';
@@ -550,7 +610,7 @@ class Query
 	 * 解析join
 	 * @return string
 	 */
-	public function parseJoin ()
+	private function parseJoin ()
 	{
 		$sql = '';
 		array_walk($this->joins,function ($join) use (&$sql) {

@@ -375,17 +375,43 @@ class Builder
 	 * @param  string $tableName 
 	 * @param  array $data      
 	 * @param  SqlPrepare $sqlPrepare      
-	 * @return string 
+	 * @return SqlPrepare 
 	 */
 	public function update ($tableName,$data = [],$sqlPrepare)
 	{
 		if (empty($sqlPrepare->getSql())) {
-			throw new SQLException('缺少更新条件');
+			throw new SQLException('缺少更新条件语句');
 		}
 		$fields    = $this->parseField(array_keys($data),true);
 		$sql = sprintf('UPDATE %s SET %s %s',$tableName,$fields,$sqlPrepare->getSql());
 		return $this->createSqlPrepare($sql,
 			array_merge(array_values($data),$sqlPrepare->getParams())
+		);
+	}
+
+	/**
+	 * 设置字段语句
+	 * @param string $tableName 
+	 * @param array $data
+	 * @param SqlPrepare $sqlPrepare
+	 * @return SqlPrepare
+	 */
+	public function setField ($tableName,$data,$sqlPrepare,$type = 'incrment')
+	{
+		if (empty($sqlPrepare->getSql())) {
+			throw new SQLException('缺少更新条件语句');
+		}
+
+		$fields = '';
+		array_walk($data,function ($value,$key) use (&$fields,$type) {
+			$fields .= 
+			sprintf('%s = %s %s %s,',$this->escape($key),$this->escape($key),$type == 'incrment' ? '+' : '-',$value);
+		});
+
+		$sql = sprintf('UPDATE %s SET %s %s',$tableName,rtrim($fields,','),$sqlPrepare->getSql());
+
+		return $this->createSqlPrepare($sql,
+			$sqlPrepare->getParams()
 		);
 	}
 

@@ -6,13 +6,6 @@ use Concise\Database\Builder;
 
 class Sqlsrv extends Builder
 {
-
-	/**
-	 * limit
-	 * @var string
-	 */
-	private $limit = '';
-
 	/**
 	 * 转义
 	 * @param  string $str 

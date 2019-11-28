@@ -132,7 +132,7 @@ class Connection
 			if (is_numeric($key)) {
 				$key += 1;
 			}
-			$prepare->bindParam($key,$value);
+			$prepare->bindValue($key,$value);
 		});
 
 		return $prepare;
