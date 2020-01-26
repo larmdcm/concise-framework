@@ -159,7 +159,7 @@ class Builder
 		}
 
 		return $this->createSqlPrepare(
-			sprintf('%s %sIN (%s)',$this->escape($field),$exp,rtrim(str_repeat("?,",count($value)),',')),$value
+			sprintf('%s %sIN (%s)',$this->escape($field),$exp,empty($value) ? "''" : rtrim(str_repeat("?,",count($value)),',')),$value
 		);
 	}
 
@@ -288,7 +288,7 @@ class Builder
 		}
 
 		if ($len == 2) {
-			if (in_array($arguments[1],['null','notNull','exists','notExists'])) {
+			if ($arguments[1] && in_array($arguments[1],['null','notNull','exists','notExists'])) {
 				return $this->parseWhereExp($arguments[0],$arguments[1],null);
 			}
 			return $this->parseWhereArray([$arguments[0] => $arguments[1]]);

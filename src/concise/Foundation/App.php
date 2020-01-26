@@ -73,7 +73,7 @@ class App
 	 * 注册初始化访问提供者列表
 	 * @var array
 	 */
-	protected $mapService = ['csrfToken','mapAnnotation','applicationService'];
+	protected $mapService = ['csrfToken','mapAnnotation','appService'];
 
 	/**
 	 * 初始化
@@ -127,6 +127,7 @@ class App
 			$instance = $this->getServiceContainer($service);
 			method_exists($instance,'map') && call_user_func([$instance,'map']);
 			method_exists($instance,'initialize') && call_user_func([$instance,'initialize']);
+			method_exists($instance,'register') && call_user_func([$instance,'register']);
 		});
 
 		return $this;

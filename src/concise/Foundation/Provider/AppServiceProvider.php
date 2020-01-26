@@ -2,7 +2,7 @@
 
 namespace Concise\Foundation\Provider;
 
-class ApplicationServiceProvider
+class AppServiceProvider
 {
 	/**
 	 * 初始化服务

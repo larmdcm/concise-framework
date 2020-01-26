@@ -21,8 +21,8 @@ return [
 		'arguments' => [],
 		'singleton' => true
 	],
-	'applicationService' => [
-		'class' 	=> 'Concise\Foundation\Provider\ApplicationServiceProvider',
+	'appService' => [
+		'class' 	=> 'Concise\Foundation\Provider\AppServiceProvider',
 		'arguments' => [],
 		'singleton' => true
 	]

@@ -331,3 +331,17 @@ if ( !function_exists('csrf_field') ) {
 		return sprintf('<input type="hidden" name="%s" value="%s">',app()->getServiceContainer('csrfToken')->token,csrf_token());
 	}
 }
+
+if ( !function_exists('is_number_array') ) {
+	
+	/**
+	 * 获取是否为数值数组
+	 * @param  array  $array 
+	 * @return boolean        
+	 */
+	function is_number_array ($array) {
+		return $array == array_filter($array,function ($value,$key) {
+			return is_numeric($value) && is_int($key);
+		},ARRAY_FILTER_USE_BOTH);
+	}
+}

@@ -27,10 +27,22 @@ class Query
 	private $tableName;
 
 	/**
+	 * 主键
+	 * @var string
+	 */
+	private $primaryKey = 'id';
+
+	/**
 	 * 字段
 	 * @var string
 	 */
 	private $fields = '*';
+
+	/**
+	 * 表别名
+	 * @var string
+	 */
+	private $alias = '';
 	
 	/**
 	 * wherePrepare
@@ -205,6 +217,7 @@ class Query
 	public function alias ($name = '')
 	{
 		if (!empty($name)) {
+			$this->alias = $name;
 			$this->tableName = $this->getBuilder()->fieldAlias($this->getTableName(),$name);
 		}
 		return $this;
@@ -451,6 +464,28 @@ class Query
 	}
 
 	/**
+	 * left join连接查询
+	 * @param  string $tableName 
+	 * @param  string $condtion  
+	 * @return Query      
+	 */
+	public function leftJoin ($tableName = '',$condtion = '')
+	{
+		return $this->join($tableName,$condtion,'LEFT');
+	}
+
+	/**
+	 * right join连接查询
+	 * @param  string $tableName 
+	 * @param  string $condtion  
+	 * @return Query      
+	 */
+	public function rightJoin ($tableName = '',$condtion = '')
+	{
+		return $this->join($tableName,$condtion,'RIGHT');
+	}
+
+	/**
 	 * buildSelectSqlPrepare
 	 * @return SqlPrepare
 	 */
@@ -497,24 +532,61 @@ class Query
 	}
 
 	/**
+	 * 执行select查询
+	 * @return Collection
+	 */
+	public function get ()
+	{
+		return Collection::make(
+			$this->getConnection()->querySqlPrepare($this->buildSelectSqlPrepare())->fetchAll(PDO::FETCH_ASSOC)
+		);
+	}
+
+	/**
+	 * 查询返回某列
+	 * @param  string $field 
+	 * @param  string $name  
+	 * @return array       
+	 */
+	public function column ($field,$name = null)
+	{
+		return $this->get()->column($field,$name);
+	}
+
+	/**
+	 * 获取值
+	 * @param  string $field 
+	 * @return string        
+	 */
+	public function value ($field)
+	{
+		$data = $this->find();
+		return $data->isEmpty() ? null : $data[$field];
+	}
+
+	/**
 	 * 执行select查询单条
+	 * @param mixed $condtion
 	 * @return DataProxy
 	 */
-	public function find ()
+	public function find ($condtion = [])
 	{
 		return $this->createDataProxy(
-			$this->getConnection()->querySqlPrepare($this->limit(1)->buildSelectSqlPrepare())->fetch(PDO::FETCH_ASSOC)
+			$this->getConnection()->querySqlPrepare($this->where(
+				is_numeric($condtion) ? [$this->primaryKey => $condtion] : $condtion
+			)->limit(1)->buildSelectSqlPrepare())->fetch(PDO::FETCH_ASSOC)
 		);
 	}
 
 	/**
 	 * 查询当条不存在抛出异常
+	 * @param mixed $condtion
 	 * @return DataProxy
 	 */
-	public function findOrFail ()
+	public function findOrFail ($condtion = [])
 	{
-		$result = $this->find();
-		if (is_null($result)) {
+		$result = $this->find($condtion);
+		if ($result->isEmpty()) {
 			throw new FailException();
 		}
 		return $result;
@@ -522,12 +594,24 @@ class Query
 
 	/**
 	 * 查询当条不存在返回空数组
+	 * @param mixed $condtion
 	 * @return DataProxy
 	 */
-	public function findOrEmpty ()
+	public function findOrEmpty ($condtion = [])
 	{
-		$result = $this->find();
-		return is_null($result) ? [] : $result;
+		$result = $this->find($condtion);
+		return $result->isEmpty() ? [] : $result;
+	}
+
+	/**
+	 * 查询当条不存在返回null
+	 * @param mixed $condtion
+	 * @return DataProxy
+	 */
+	public function findOrNull ($condtion = [])
+	{
+		$result = $this->find($condtion);
+		return $result->isEmpty() ? null : $result;
 	}
 
 	/**
@@ -823,9 +907,10 @@ class Query
 	 */
 	public function createDataProxy ($data = [])
 	{
-		if (count($data) == count($data,1)) {
-			return $data ? new DataProxy($data) : null;
+		if ($data === false || (!empty($data) && count($data) == count($data,1))) {
+			return new DataProxy($data);
 		}
+
 		return array_map(function ($item) {
 			return new DataProxy($item);
 		},$data);
@@ -865,6 +950,15 @@ class Query
 	}
 
 	/**
+	 * 获取当前表别名
+	 * @return string
+	 */
+	public function getAlias ()
+	{
+		return $this->alias;
+	}
+
+	/**
 	 * new builder
 	 * @return Builder
 	 */
@@ -890,6 +984,26 @@ class Query
 	public function getTableName ()
 	{
 		return $this->tableName;
+	}
+
+	/**
+	 * 设置主键
+	 * @param string $primaryKey 
+	 * @return Query 
+	 */
+	public function setPrimaryKey ($primaryKey)
+	{
+		$this->primaryKey = $primaryKey;
+		return $this;
+	}
+
+	/**
+	 * 获取主键
+	 * @return string
+	 */
+	public function getPrimaryKey ()
+	{
+		return $this->primaryKey;
 	}
 
 	/**
