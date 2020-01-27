@@ -3,14 +3,15 @@
 namespace Concise\Http\Request;
 
 use Concise\Container\Container;
+use Concise\Foundation\Config;
 
 trait AuthenticateRequest
 {
-	protected $key = 'concise_user';
+	protected $authKey = 'concise_user';
 
 	public function user ()
 	{
-		$user = Container::get('session')->get($this->key);
+		$user = Container::get('session')->get($this->getAuthKey());
 		if (empty($user)) {
 			return false;
 		}
@@ -20,11 +21,16 @@ trait AuthenticateRequest
 
 	public function auth ($user)
 	{
-		return Container::get('session')->set($this->key,$user);
+		return Container::get('session')->set($this->getAuthKey(),$user);
 	}
 
 	public function authExit ()
 	{
-		return Container::get('session')->delete($this->key);
+		return Container::get('session')->delete($this->getAuthKey());
+	}
+
+	protected function getAuthKey ()
+	{
+		return sprintf("%s_%s_%s",Config::get('app_name','Concise'),$this->authKey,$this->module());
 	}
 }
