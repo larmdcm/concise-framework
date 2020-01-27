@@ -29,22 +29,24 @@ class Import extends Annotation
 	public function handle ($ref)
 	{
 		$arguments = array_merge($this->options,$this->getArgsuments());
-		$component = $arguments['component'];
-
-		if (!class_exists($component)) {
-			foreach ($this->getNamesapce() as $namespace) {
-				$componentClass = sprintf("\\%s\\%s",$namespace,$component);
-				if (class_exists($componentClass)) {
-					$component = $componentClass;
-					break;
+		$components = $this->parseArrayArguments($arguments['component']);
+		foreach ($components as $component) {
+			if (!class_exists($component)) {
+				foreach ($this->getNamesapce() as $namespace) {
+					$componentClass = sprintf("\\%s\\%s",$namespace,$component);
+					if (class_exists($componentClass)) {
+						$component = $componentClass;
+						break;
+					}
 				}
 			}
+			
+			$annotComponent = new $component();
+			if (!empty($arguments['name'])) {
+				$annotComponent->setName($arguments['name']);
+			}
+			$annotComponent->resourceMethods($ref->getName());
 		}
-		$annotComponent = new $component();
-		if (!empty($arguments['name'])) {
-			$annotComponent->setName($arguments['name']);
-		}
-		$annotComponent->resourceMethods($ref->getName());
 	}
 
 	/**

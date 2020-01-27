@@ -80,13 +80,12 @@ class View
 	{
 		$class = $engine == '' ? '\\Concise\\View\\Drive\\Native' : '\\Concise\\View\\Drive\\' . ucfirst($engine);
 
-		if (is_null(self::$instance)) {
-			if (class_exists($class)) {
-				self::$instance = new $class($config,$templatePath);
-			} else {
-				throw new ClassNotException('class is not exists:' . $class);
-			}
+		if (class_exists($class)) {
+			self::$instance = new $class($config,$templatePath);
+		} else {
+			throw new ClassNotException('class is not exists:' . $class);
 		}
+		
 		return self::$instance;
 	}
 

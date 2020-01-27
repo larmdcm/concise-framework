@@ -4,6 +4,7 @@ namespace Concise\Http;
 
 use Concise\Foundation\Arr;
 use Concise\Http\Request\AuthenticateRequest;
+use Concise\File\File;
 
 class Request
 {
@@ -49,6 +50,12 @@ class Request
 	 * @var array
 	 */
 	protected $put;
+
+    /**
+     * 文件上传请求变量
+     * @var array
+     */
+    protected $file;
 
     /**
      * 请求变量
@@ -255,6 +262,57 @@ class Request
         }
         $this->param = array_merge($this->get(),$this->params,$requestVars);
         return $this->input($this->param,$key,$default,$filter);
+    }
+
+    /**
+     * 获取文件上传
+     * @param  string $name 
+     * @return mixed    
+     */
+    public function file ($name = null)
+    {
+        $this->file = $_FILES;
+
+        $files = $this->file;
+
+        if (is_null($name)) {
+            return $files;
+        }
+
+        if (empty($files) || !isset($_FILES[$name])) {
+            return null;
+        }
+        $info = $_FILES[$name];
+        if (is_array($info['name'])) {
+            $items = [];
+            $count = count($info['name']);
+            $keys  = array_keys($info);
+
+            for ($i = 0; $i < $count; $i++) {
+                if (empty($info['tmp_name'][$i]) || !is_file($info['tmp_name'][$i])) {
+                    continue;
+                }
+                
+                foreach ($keys as $_key) {
+                    $temp[$_key] = $info[$_key][$i];
+                }
+
+                $items[] = (new File($temp['tmp_name']))->setUploadInfo($temp);
+            }
+
+            return $items; 
+        }
+        return (new File($info['tmp_name']))->setUploadInfo($info);
+    }
+
+    /**
+     * 获取文件信息是否存在
+     * @param  string  $name 
+     * @return boolean       
+     */
+    public function hasFile ($name)
+    {
+        return !is_null($this->file($name));
     }
 
     /**

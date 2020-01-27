@@ -213,4 +213,17 @@ abstract class Annotation
 	{
 		return $this->defaultArgumentNames;
 	}
+
+	/**
+	 * 解析数组参数
+	 * @param  string $argument 
+	 * @return array           
+	 */
+	protected function parseArrayArguments ($argument)
+	{
+		if (substr($argument, 0,1) !== '[') {
+			return [$argument];
+		}
+		return explode(',',rtrim(ltrim($argument,'['),']'));
+	}
 }
